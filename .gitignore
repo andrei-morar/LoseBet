@@ -1,0 +1,18 @@
+# Ignore Visual Studio temporary files, build results, and user specific files
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Ignore database files (so you don't overwrite each other's test data)
+*.mdf
+*.ldf
+*.ndf
+*.sqlite
+*.db
+
+# Ignore sensitive config files
+appsettings.Development.json
