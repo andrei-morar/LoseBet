@@ -1,29 +1,29 @@
-using Microsoft.EntityFrameworkCore;
 using LoseBet.API.Data;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// 1. Spunem aplicației să folosească fișierele de tip Controller (adică AuthController-ul tău)
+builder.Services.AddControllers();
+
+// 2. Conectăm Baza de Date
 builder.Services.AddDbContext<LoseBetDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Add services to the container.
-
-builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// 3. Pregătim Swagger-ul
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// 4. Activăm interfața grafică pentru API (doar pe calculatorul tău, în Development)
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
-
+// 5. Activăm rutele
 app.MapControllers();
 
 app.Run();
