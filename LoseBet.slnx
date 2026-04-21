@@ -1,1 +1,6 @@
-<Solution />
+<Solution>
+  <Folder Name="/Solution Items/" />
+  <Project Path="LoseBet.API/LoseBet.API.csproj" Id="0f6a23f4-30ba-4647-bec9-6a2d3e4718fb" />
+  <Project Path="LoseBet.Core/LoseBet.Core.csproj" Id="a98fef65-a174-45cd-886a-70ee359cfe53" />
+  <Project Path="LoseBet.Desktop/LoseBet.Desktop.csproj" Id="7b347b09-3b2b-4cb6-85bb-8ba728cf27f6" />
+</Solution>
