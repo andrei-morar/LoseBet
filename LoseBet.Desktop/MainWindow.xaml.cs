@@ -14,6 +14,7 @@ namespace LoseBet.Desktop
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
+    /// //ssasasaas
     public partial class MainWindow : Window
     {
         public MainWindow()
