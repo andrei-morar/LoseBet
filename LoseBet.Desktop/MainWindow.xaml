@@ -1,24 +1,59 @@
 ﻿<Window x:Class="LoseBet.Desktop.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="LoseBet Auth - Vertical Slice" Height="450" Width="350">
+        Title="LoseBet Auth" Height="650" Width="400">
 
-    <StackPanel Margin="30" VerticalAlignment="Center">
+    <Grid Margin="30">
 
-        <TextBlock Text="Email:" Margin="0,0,0,5" FontWeight="Bold"/>
-        <TextBox x:Name="TxtEmail" Margin="0,0,0,15" Height="25"/>
+        <StackPanel x:Name="PnlLogin" VerticalAlignment="Center" Visibility="Visible">
+            <TextBlock Text="AUTENTIFICARE" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,20"/>
 
-        <TextBlock Text="Parolă:" Margin="0,0,0,5" FontWeight="Bold"/>
-        <PasswordBox x:Name="TxtPassword" Margin="0,0,0,15" Height="25"/>
+            <TextBlock Text="Username:" Margin="0,0,0,5" FontWeight="Bold"/>
+            <TextBox x:Name="TxtLoginUsername" Margin="0,0,0,15" Height="25"/>
 
-        <TextBlock Text="CNP (Doar pentru Register):" Margin="0,0,0,5" FontWeight="Bold"/>
-        <TextBox x:Name="TxtCnp" Margin="0,0,0,25" Height="25"/>
+            <TextBlock Text="Parolă:" Margin="0,0,0,5" FontWeight="Bold"/>
+            <PasswordBox x:Name="TxtLoginPassword" Margin="0,0,0,20" Height="25"/>
 
-        <Button Content="Login" Click="BtnLogin_Click" Margin="0,0,0,10" Height="35"/>
-        <Button Content="Register" Click="BtnRegister_Click" Margin="0,0,0,20" Height="35"/>
+            <Button Content="Login" Click="BtnLogin_Click" Height="35" Margin="0,0,0,15" Background="LightGray"/>
 
-        <TextBlock x:Name="TxtStatus" Text="Aștept acțiune..." TextWrapping="Wrap" 
-                   HorizontalAlignment="Center" Foreground="Gray"/>
+            <Button Content="Nu ai cont? Creează unul" Click="BtnShowRegister_Click" Height="30" Background="Transparent" BorderThickness="0" Foreground="Blue" Cursor="Hand"/>
+        </StackPanel>
 
-    </StackPanel>
+        
+        
+
+        <StackPanel x:Name="PnlRegister" VerticalAlignment="Center" Visibility="Collapsed">
+            <TextBlock Text="ÎNREGISTRARE CONT NOU" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+
+            <TextBlock Text="Nume:" Margin="0,0,0,2" FontWeight="Bold"/>
+            <TextBox x:Name="TxtRegNume" Margin="0,0,0,10" Height="25"/>
+
+            <TextBlock Text="Prenume:" Margin="0,0,0,2" FontWeight="Bold"/>
+            <TextBox x:Name="TxtRegPrenume" Margin="0,0,0,10" Height="25"/>
+
+            <TextBlock Text="CNP:" Margin="0,0,0,2" FontWeight="Bold"/>
+            <TextBox x:Name="TxtRegCnp" Margin="0,0,0,10" Height="25"/>
+
+            <TextBlock Text="Data Nașterii:" Margin="0,0,0,2" FontWeight="Bold"/>
+            <DatePicker x:Name="DpDataNasterii" Margin="0,0,0,10" Height="25"/>
+
+            <TextBlock Text="Email:" Margin="0,0,0,2" FontWeight="Bold"/>
+            <TextBox x:Name="TxtRegEmail" Margin="0,0,0,10" Height="25"/>
+
+            <TextBlock Text="Username:" Margin="0,0,0,2" FontWeight="Bold"/>
+            <TextBox x:Name="TxtRegUsername" Margin="0,0,0,10" Height="25"/>
+
+            <TextBlock Text="Parolă:" Margin="0,0,0,2" FontWeight="Bold"/>
+            <PasswordBox x:Name="TxtRegPassword" Margin="0,0,0,20" Height="25"/>
+
+            <Button Content="Register" Click="BtnRegister_Click" Height="35" Margin="0,0,0,10" Background="LightGray"/>
+
+            <Button Content="Înapoi la Autentificare" Click="BtnShowLogin_Click" Height="30" Background="Transparent" BorderThickness="0" Foreground="Blue" Cursor="Hand"/>
+        </StackPanel>
+
+
+        <TextBlock x:Name="TxtStatus" Text="" TextWrapping="Wrap" 
+                   HorizontalAlignment="Center" VerticalAlignment="Bottom" Foreground="Gray" Margin="0,10,0,0"/>
+
+    </Grid>
 </Window>
