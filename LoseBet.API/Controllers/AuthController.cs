@@ -11,7 +11,6 @@ namespace LoseBet.API.Controllers
     {
         private readonly LoseBetDbContext _context;
 
-        // Aici "injectăm" baza de date ca să o putem folosi
         public AuthController(LoseBetDbContext context)
         {
             _context = context;
@@ -20,23 +19,23 @@ namespace LoseBet.API.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterRequest request)
         {
-            // 1. Validăm CNP-ul și vârsta (18+)
-            /* NOTĂ: Asigură-te că metoda ValidateCNP din IdentityValidator este publică și statică! */
-            if (!IdentityValidator.ValidateCNP(request.CNP))
-                 return BadRequest("CNP invalid sau vârsta este sub 18 ani.");
+            // 1. Validăm CNP-ul (Atenție: am modificat în request.Cnp cu litere mici, cum e în DTO)
+            // Trimitem și data pe care ai introdus-o tu pe Frontend
+            if (!IdentityValidator.ValidateCNP(request.Cnp, request.DataNasterii))
+                return BadRequest("CNP invalid, sub 18 ani, sau data nașterii nu corespunde cu CNP-ul.");
 
-            // 2. Verificăm dacă email-ul există deja în baza de date
-            if (await _context.Users.AnyAsync(u => u.Email == request.Email))
-                return BadRequest("Acest email este deja folosit.");
+            // 2. Verificăm dacă email-ul sau username-ul există deja în baza de date
+            if (await _context.Users.AnyAsync(u => u.Email == request.Email || u.Username == request.Username))
+                return BadRequest("Acest email sau username este deja folosit.");
 
-            // 3. Creăm utilizatorul (Atenție: în producție parola trebuie criptată, aici o lăsăm simplă pentru test)
+            // 3. Creăm utilizatorul
             var newUser = new User
             {
                 Email = request.Email,
-                Username = request.Email.Split('@')[0], // Luăm prima parte din email ca username
+                Username = request.Username, // Folosim Username-ul trimis de tine din WPF!
                 PasswordHash = request.Password,
-                CNP = request.CNP,
-                Balance = 0, // Primește 0 lei la început
+                CNP = request.Cnp, // Am pus request.Cnp (litere mici)
+                Balance = 0,
                 IsAgeVerified = true
             };
 
@@ -50,27 +49,31 @@ namespace LoseBet.API.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            // Căutăm userul în baza de date după email și parolă
-            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == request.Email && u.PasswordHash == request.Password);
+            // Căutăm userul în baza de date după USERNAME (înainte era Email) și parolă
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username && u.PasswordHash == request.Password);
 
             if (user == null)
-                return Unauthorized("Email sau parolă incorecte!");
+                return Unauthorized("Username sau parolă incorecte!");
 
             return Ok($"Login reușit! Bine ai venit, {user.Username}. Sold: {user.Balance} RON");
         }
     }
 
-    // Acestea sunt DTO-uri (Data Transfer Objects) - "Pachetele" pe care le primim de la Frontend
+    // --- DTO-urile actualizate la fix ---
     public class RegisterRequest
     {
+        public string Nume { get; set; } = string.Empty;
+        public string Prenume { get; set; } = string.Empty;
+        public string Cnp { get; set; } = string.Empty;
+        public DateTime DataNasterii { get; set; }
         public string Email { get; set; } = string.Empty;
+        public string Username { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
-        public string CNP { get; set; } = string.Empty;
     }
 
     public class LoginRequest
     {
-        public string Email { get; set; } = string.Empty;
+        public string Username { get; set; } = string.Empty;
         public string Password { get; set; } = string.Empty;
     }
 }
