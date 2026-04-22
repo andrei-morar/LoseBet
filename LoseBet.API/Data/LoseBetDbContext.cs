@@ -13,5 +13,9 @@ namespace LoseBet.API.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Bet> Bets { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
+
+        public DbSet<MinesSession> MinesSessions { get; set; }
+        public DbSet<BlackjackSession> BlackjackSessions { get; set; }
+        public DbSet<AviatorSessions> AviatorSessions { get; set; }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace LoseBet.Core.Models
 {
-    public enum TransactionType { Deposit, Withdrawal, Bonus }
+    public enum TransactionType { Deposit, Withdrawal, GameBet, GameWin }
 
     public class Transaction
     {
