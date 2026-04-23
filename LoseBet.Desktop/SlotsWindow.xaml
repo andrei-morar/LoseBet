@@ -1,0 +1,66 @@
+﻿<Window x:Class="LoseBet.Desktop.SlotsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="LoseBet - Fruit Multiplier" Height="600" Width="650" WindowStartupLocation="CenterScreen">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0,0,0,20">
+            <Button Content="⬅ Înapoi la Lobby" Click="BtnBack_Click" Width="130" Height="30" HorizontalAlignment="Left" Background="Transparent" BorderThickness="0" Foreground="Blue" Cursor="Hand"/>
+            <TextBlock x:Name="TxtBalance" Text="Sold: 0.00 RON" FontSize="16" FontWeight="Bold" Foreground="Green" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+        </Grid>
+
+        <StackPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center">
+
+            <Border BorderBrush="Black" BorderThickness="3" CornerRadius="10" Background="LightYellow" Padding="15">
+                <UniformGrid Rows="3" Columns="5" Width="450" Height="220">
+                    <TextBlock x:Name="S00" Text="🎰" FontSize="45" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="S01" Text="🎰" FontSize="45" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="S02" Text="🎰" FontSize="45" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="S03" Text="🎰" FontSize="45" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="S04" Text="🎰" FontSize="45" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                    <TextBlock x:Name="S10" Text="🎰" FontSize="45" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="S11" Text="🎰" FontSize="45" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="S12" Text="🎰" FontSize="45" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="S13" Text="🎰" FontSize="45" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="S14" Text="🎰" FontSize="45" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+                    <TextBlock x:Name="S20" Text="🎰" FontSize="45" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="S21" Text="🎰" FontSize="45" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="S22" Text="🎰" FontSize="45" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="S23" Text="🎰" FontSize="45" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="S24" Text="🎰" FontSize="45" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </UniformGrid>
+            </Border>
+
+            <TextBlock x:Name="TxtStatus" Text="Pune o miză și apasă SPIN!" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,15,0,0"/>
+
+            <Border x:Name="PanelDublaj" Visibility="Collapsed" Background="#FFDAB9" BorderBrush="DarkOrange" BorderThickness="2" CornerRadius="10" Padding="10" Margin="0,10,0,0">
+                <StackPanel HorizontalAlignment="Center">
+                    <TextBlock Text="CÂȘTIG! Vrei să-l dublezi?" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="TxtDublajAmount" Text="Suma pe masă: 0 RON" FontSize="18" FontWeight="Bold" Foreground="DarkRed" HorizontalAlignment="Center" Margin="0,5,0,10"/>
+
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Button Content="🔴 ROȘIE" Click="BtnRosie_Click" Width="100" Height="35" Margin="5" Background="Red" Foreground="White" FontWeight="Bold" Cursor="Hand"/>
+                        <Button Content="⚫ NEAGRĂ" Click="BtnNeagra_Click" Width="100" Height="35" Margin="5" Background="Black" Foreground="White" FontWeight="Bold" Cursor="Hand"/>
+                        <Button Content="💰 ÎNCASEAZĂ" Click="BtnIncaseaza_Click" Width="110" Height="35" Margin="5" Background="LightGreen" FontWeight="Bold" Cursor="Hand"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,10,0,0">
+            <TextBlock Text="Miza (RON):" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,10,0"/>
+            <TextBox x:Name="TxtBetAmount" Text="10" FontSize="16" Width="60" Height="30" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,0,20,0"/>
+
+            <Button x:Name="BtnSpin" Content="🎰 ROTIRE (SPIN)" Click="BtnSpin_Click" Width="150" Height="40" Background="Gold" FontSize="16" FontWeight="Bold" Cursor="Hand"/>
+        </StackPanel>
+    </Grid>
+</Window>

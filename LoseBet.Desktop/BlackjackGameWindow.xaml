@@ -1,0 +1,47 @@
+﻿<Window x:Class="LoseBet.Desktop.BlackjackGameWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="LoseBet - Blackjack" Height="650" Width="800" WindowStartupLocation="CenterScreen" Background="#063D1E">
+
+    <Grid Margin="15">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0,0,0,10">
+            <Button Content="⬅ Lobby" Click="BtnBack_Click" Width="80" Height="30" HorizontalAlignment="Left" Background="#1a1a1a" Foreground="White" BorderThickness="0" Cursor="Hand"/>
+            <TextBlock x:Name="TxtBalance" Text="Sold: 0.00 RON" Foreground="Gold" FontSize="20" FontWeight="Bold" HorizontalAlignment="Right"/>
+        </Grid>
+
+        <StackPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center">
+            <TextBlock x:Name="TxtDealerScore" Text="Cărțile Dealerului: ?" Foreground="White" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+            <StackPanel x:Name="PanelDealerCards" Orientation="Horizontal" HorizontalAlignment="Center" Height="120">
+            </StackPanel>
+        </StackPanel>
+
+        <TextBlock x:Name="TxtStatus" Grid.Row="2" Text="Pune miza și apasă DEAL!" Foreground="Gold" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,15,0,15"/>
+
+        <StackPanel Grid.Row="3" VerticalAlignment="Center" HorizontalAlignment="Center">
+            <StackPanel x:Name="PanelPlayerCards" Orientation="Horizontal" HorizontalAlignment="Center" Height="120">
+            </StackPanel>
+            <TextBlock x:Name="TxtPlayerScore" Text="Scorul tău: 0" Foreground="White" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,10,0,0"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="4" Margin="0,20,0,0">
+            <StackPanel x:Name="PanelBetting" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,15">
+                <TextBlock Text="Miza (RON):" Foreground="White" FontSize="18" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="Bold"/>
+                <TextBox x:Name="TxtBetAmount" Text="50" Width="80" Height="35" FontSize="18" TextAlignment="Center" VerticalContentAlignment="Center"/>
+                <Button x:Name="BtnDeal" Content="ÎMPARTE (DEAL)" Click="BtnDeal_Click" Width="180" Height="40" Margin="20,0,0,0" Background="Gold" FontSize="18" FontWeight="Bold" Cursor="Hand"/>
+            </StackPanel>
+
+            <StackPanel x:Name="PanelActions" Orientation="Horizontal" HorizontalAlignment="Center" Visibility="Collapsed">
+                <Button x:Name="BtnHit" Content="➕ HIT (TRAGE)" Click="BtnHit_Click" Width="200" Height="45" Margin="10" Background="LightBlue" FontSize="16" FontWeight="Bold" Cursor="Hand"/>
+                <Button x:Name="BtnStand" Content="🛑 STAND (STAI)" Click="BtnStand_Click" Width="200" Height="45" Margin="10" Background="Tomato" Foreground="White" FontSize="16" FontWeight="Bold" Cursor="Hand"/>
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Window>
