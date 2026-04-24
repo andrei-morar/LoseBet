@@ -49,7 +49,7 @@ namespace LoseBet.API.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
-            // Căutăm userul în baza de date după USERNAME (înainte era Email) și parolă
+            // Căutăm userul în baza de date după USERNAME (înainte era Email) și parola
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username && u.PasswordHash == request.Password);
 
             if (user == null)
