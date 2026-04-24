@@ -53,7 +53,7 @@ namespace LoseBet.Desktop
             return card;
         }
 
-        // Calculăm scorul (Așii sunt 11 sau 1)
+        // Calculam scorul (Așii sunt 11 sau 1)
         private int CalculateScore(List<string> hand)
         {
             int score = 0;
