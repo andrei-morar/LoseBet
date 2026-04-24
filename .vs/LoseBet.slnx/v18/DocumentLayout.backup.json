@@ -1,0 +1,53 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Morar Andrei\\source\\repos\\andrei-morar\\LoseBet\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{0F6A23F4-30BA-4647-BEC9-6A2D3E4718FB}|LoseBet.API\\LoseBet.API.csproj|c:\\users\\morar andrei\\source\\repos\\andrei-morar\\losebet\\losebet.api\\data\\losebetdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0F6A23F4-30BA-4647-BEC9-6A2D3E4718FB}|LoseBet.API\\LoseBet.API.csproj|solutionrelative:losebet.api\\data\\losebetdbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A98FEF65-A174-45CD-886A-70EE359CFE53}|LoseBet.Core\\LoseBet.Core.csproj|c:\\users\\morar andrei\\source\\repos\\andrei-morar\\losebet\\losebet.core\\models\\transaction.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A98FEF65-A174-45CD-886A-70EE359CFE53}|LoseBet.Core\\LoseBet.Core.csproj|solutionrelative:losebet.core\\models\\transaction.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 1,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedHeight": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "LoseBetDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\Morar Andrei\\source\\repos\\andrei-morar\\LoseBet\\LoseBet.API\\Data\\LoseBetDbContext.cs",
+              "RelativeDocumentMoniker": "LoseBet.API\\Data\\LoseBetDbContext.cs",
+              "ToolTip": "C:\\Users\\Morar Andrei\\source\\repos\\andrei-morar\\LoseBet\\LoseBet.API\\Data\\LoseBetDbContext.cs",
+              "RelativeToolTip": "LoseBet.API\\Data\\LoseBetDbContext.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAqwBMAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-22T19:15:15.369Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Transaction.cs",
+              "DocumentMoniker": "C:\\Users\\Morar Andrei\\source\\repos\\andrei-morar\\LoseBet\\LoseBet.Core\\Models\\Transaction.cs",
+              "RelativeDocumentMoniker": "LoseBet.Core\\Models\\Transaction.cs",
+              "ToolTip": "C:\\Users\\Morar Andrei\\source\\repos\\andrei-morar\\LoseBet\\LoseBet.Core\\Models\\Transaction.cs",
+              "RelativeToolTip": "LoseBet.Core\\Models\\Transaction.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAABIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-22T17:57:07.572Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

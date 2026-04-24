@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "LoseBet.API\\LoseBet.API.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "LoseBet.Desktop\\LoseBet.Desktop.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

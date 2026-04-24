@@ -1,0 +1,20 @@
+﻿LoseBet.Desktop
+1.0.0.0
+
+winexe
+C#
+.cs
+C:\Users\Morar Andrei\source\repos\andrei-morar\LoseBet\LoseBet.Desktop\obj\Debug\net10.0-windows\
+LoseBet.Desktop
+none
+false
+TRACE;DEBUG;NET;NET10_0;NETCOREAPP;WINDOWS;WINDOWS7_0;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NET9_0_OR_GREATER;NET10_0_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER;WINDOWS7_0_OR_GREATER
+C:\Users\Morar Andrei\source\repos\andrei-morar\LoseBet\LoseBet.Desktop\App.xaml
+101011980185
+
+15-752614425
+2061815282281
+BlackjackGameWindow.xaml;BlackJackLobbyWindow.xaml;DashboardWindow.xaml;MainWindow.xaml;RouletteGameWindow.xaml;RouletteLobbyWindow.xaml;SizzlingHotWindow.xaml;SlotsLobbyWindow.xaml;SlotsWindow.xaml;WalletWindow.xaml;
+
+False
+

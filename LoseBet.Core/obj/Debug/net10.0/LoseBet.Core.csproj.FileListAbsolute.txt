@@ -1,0 +1,12 @@
+C:\Users\Morar Andrei\source\repos\andrei-morar\LoseBet\LoseBet.Core\bin\Debug\net10.0\LoseBet.Core.deps.json
+C:\Users\Morar Andrei\source\repos\andrei-morar\LoseBet\LoseBet.Core\bin\Debug\net10.0\LoseBet.Core.dll
+C:\Users\Morar Andrei\source\repos\andrei-morar\LoseBet\LoseBet.Core\bin\Debug\net10.0\LoseBet.Core.pdb
+C:\Users\Morar Andrei\source\repos\andrei-morar\LoseBet\LoseBet.Core\obj\Debug\net10.0\LoseBet.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Morar Andrei\source\repos\andrei-morar\LoseBet\LoseBet.Core\obj\Debug\net10.0\LoseBet.Core.AssemblyInfoInputs.cache
+C:\Users\Morar Andrei\source\repos\andrei-morar\LoseBet\LoseBet.Core\obj\Debug\net10.0\LoseBet.Core.AssemblyInfo.cs
+C:\Users\Morar Andrei\source\repos\andrei-morar\LoseBet\LoseBet.Core\obj\Debug\net10.0\LoseBet.Core.csproj.CoreCompileInputs.cache
+C:\Users\Morar Andrei\source\repos\andrei-morar\LoseBet\LoseBet.Core\obj\Debug\net10.0\LoseBet.Core.sourcelink.json
+C:\Users\Morar Andrei\source\repos\andrei-morar\LoseBet\LoseBet.Core\obj\Debug\net10.0\LoseBet.Core.dll
+C:\Users\Morar Andrei\source\repos\andrei-morar\LoseBet\LoseBet.Core\obj\Debug\net10.0\refint\LoseBet.Core.dll
+C:\Users\Morar Andrei\source\repos\andrei-morar\LoseBet\LoseBet.Core\obj\Debug\net10.0\LoseBet.Core.pdb
+C:\Users\Morar Andrei\source\repos\andrei-morar\LoseBet\LoseBet.Core\obj\Debug\net10.0\ref\LoseBet.Core.dll
