@@ -1,129 +1,292 @@
 ﻿<Window x:Class="LoseBet.Desktop.RouletteGameWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="LoseBet - Pro Roulette" Height="700" Width="1150" WindowStartupLocation="CenterScreen" Background="#063D1E">
+        Title="LoseBet - Pro Roulette" Height="750" Width="1200" WindowStartupLocation="CenterScreen" 
+        Background="Transparent" AllowsTransparency="True" WindowStyle="None">
 
-    <Grid Margin="15">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
+    <Window.Resources>
+        <Style TargetType="Button" x:Key="TableBetButtonStyle">
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="BorderBrush" Value="#444"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid x:Name="RootGrid" RenderTransformOrigin="0.5,0.5">
+                            <Grid.RenderTransform>
+                                <ScaleTransform ScaleX="1" ScaleY="1"/>
+                            </Grid.RenderTransform>
+                            <Border x:Name="BgBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="2"/>
+                            </Border>
+                            <Border x:Name="GlowBorder" CornerRadius="4" BorderBrush="#FFD700" BorderThickness="2" Opacity="0">
+                                <Border.Effect>
+                                    <DropShadowEffect Color="#FFD700" BlurRadius="10" ShadowDepth="0"/>
+                                </Border.Effect>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="GlowBorder" Property="Opacity" Value="1"/>
+                                <Setter TargetName="BgBorder" Property="BorderBrush" Value="#FFD700"/>
+                                <Setter Property="Panel.ZIndex" Value="100"/>
+                            </Trigger>
+                            <EventTrigger RoutedEvent="MouseEnter">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1.1" Duration="0:0:0.1"/>
+                                        <DoubleAnimation Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1.1" Duration="0:0:0.1"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                            <EventTrigger RoutedEvent="MouseLeave">
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.1"/>
+                                        <DoubleAnimation Storyboard.TargetName="RootGrid" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.1"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
 
-        <Grid Grid.Row="0" Margin="0,0,0,20">
-            <Button Content="⬅ Lobby" Click="BtnBack_Click" Width="80" Height="30" HorizontalAlignment="Left" Background="#1a1a1a" Foreground="White" BorderThickness="0" Cursor="Hand"/>
-            <TextBlock x:Name="TxtBalance" Text="Sold: 0.00 RON" Foreground="Gold" FontSize="22" FontWeight="Bold" HorizontalAlignment="Right"/>
-        </Grid>
+    <Window.Triggers>
+        <EventTrigger RoutedEvent="Window.Loaded">
+            <BeginStoryboard>
+                <Storyboard>
+                    <DoubleAnimation Storyboard.TargetName="MainBorder" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.5"/>
+                    <DoubleAnimation Storyboard.TargetName="MainScale" Storyboard.TargetProperty="ScaleX" From="0.9" To="1" Duration="0:0:0.6">
+                        <DoubleAnimation.EasingFunction>
+                            <BackEase EasingMode="EaseOut"/>
+                        </DoubleAnimation.EasingFunction>
+                    </DoubleAnimation>
+                    <DoubleAnimation Storyboard.TargetName="MainScale" Storyboard.TargetProperty="ScaleY" From="0.9" To="1" Duration="0:0:0.6">
+                        <DoubleAnimation.EasingFunction>
+                            <BackEase EasingMode="EaseOut"/>
+                        </DoubleAnimation.EasingFunction>
+                    </DoubleAnimation>
+                </Storyboard>
+            </BeginStoryboard>
+        </EventTrigger>
+    </Window.Triggers>
 
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="450"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
+    <Border x:Name="MainBorder" CornerRadius="20" BorderBrush="#FFD700" BorderThickness="2" Margin="15" Background="#0B2B13">
+        <Border.RenderTransform>
+            <ScaleTransform x:Name="MainScale"/>
+        </Border.RenderTransform>
+        <Border.Effect>
+            <DropShadowEffect Color="Black" BlurRadius="30" ShadowDepth="10" Opacity="0.8"/>
+        </Border.Effect>
+        <Grid Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-            <Grid Grid.Column="0" VerticalAlignment="Center" HorizontalAlignment="Center" Width="350" Height="350">
-                <Canvas x:Name="WheelCanvas" Width="350" Height="350" RenderTransformOrigin="0.5,0.5">
-                    <Canvas.RenderTransform>
-                        <RotateTransform x:Name="WheelRotation" Angle="0"/>
-                    </Canvas.RenderTransform>
-                </Canvas>
-
-                <Ellipse x:Name="RouletteBall" Width="14" Height="14" Fill="White" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,25,0,0">
-                    <Ellipse.RenderTransform>
-                        <RotateTransform x:Name="BallRotation" Angle="0" CenterX="7" CenterY="150"/>
-                    </Ellipse.RenderTransform>
-                </Ellipse>
-
-                <TextBlock x:Name="TxtWheelResult" Text="?" Foreground="White" FontSize="36" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+            <Grid Grid.Row="0" Margin="0,0,0,20">
+                <Button Content="⬅ LOBBY" Click="BtnBack_Click" Width="100" Height="35" HorizontalAlignment="Left" Background="#111" Foreground="#FFD700" Cursor="Hand">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="8"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+                <TextBlock Text="LOSEBET VIP ROULETTE" Foreground="#FFD700" FontSize="26" FontWeight="Black" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <TextBlock x:Name="TxtBalance" Text="Sold: 0.00 RON" Foreground="#FFD700" FontSize="22" FontWeight="Bold" HorizontalAlignment="Right" VerticalAlignment="Center"/>
             </Grid>
 
-            <Grid Grid.Column="1" VerticalAlignment="Center" Margin="20,0,0,0">
+            <Grid Grid.Row="1">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="50"/>
-                    <ColumnDefinition Width="45"/>
-                    <ColumnDefinition Width="45"/>
-                    <ColumnDefinition Width="45"/>
-                    <ColumnDefinition Width="45"/>
-                    <ColumnDefinition Width="45"/>
-                    <ColumnDefinition Width="45"/>
-                    <ColumnDefinition Width="45"/>
-                    <ColumnDefinition Width="45"/>
-                    <ColumnDefinition Width="45"/>
-                    <ColumnDefinition Width="45"/>
-                    <ColumnDefinition Width="45"/>
-                    <ColumnDefinition Width="45"/>
-                    <ColumnDefinition Width="50"/>
+                    <ColumnDefinition Width="450"/>
+                    <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="50"/>
-                    <RowDefinition Height="50"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="50"/>
-                    <RowDefinition Height="50"/>
-                </Grid.RowDefinitions>
 
-                <Button Content="0" Click="BtnBet_Click" Tag="0" Background="#008000" Foreground="White" FontSize="20" FontWeight="Bold" Grid.Column="0" Grid.RowSpan="3" BorderBrush="White" Cursor="Hand"/>
+                <Border Grid.Column="0" Width="380" Height="380" CornerRadius="190" BorderBrush="#FFD700" BorderThickness="5" Background="#111" HorizontalAlignment="Center">
+                    <Grid>
+                        <Canvas x:Name="WheelCanvas" Width="350" Height="350" HorizontalAlignment="Center" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+                            <Canvas.RenderTransform>
+                                <RotateTransform x:Name="WheelRotation" Angle="0"/>
+                            </Canvas.RenderTransform>
+                        </Canvas>
+                        <Ellipse x:Name="RouletteBall" Width="16" Height="16" Fill="White" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,20,0,0">
+                            <Ellipse.RenderTransform>
+                                <RotateTransform x:Name="BallRotation" Angle="0" CenterX="8" CenterY="170"/>
+                            </Ellipse.RenderTransform>
+                        </Ellipse>
+                        <Border Width="90" Height="90" CornerRadius="45" Background="#1A1A1A" BorderBrush="#FFD700" BorderThickness="2" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <TextBlock x:Name="TxtWheelResult" Text="?" Foreground="#00FF00" FontSize="42" FontWeight="Black" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Border>
+                    </Grid>
+                </Border>
 
-                <Button Content="3" Click="BtnBet_Click" Tag="3" Background="#cc0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="1" Grid.Row="0" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="6" Click="BtnBet_Click" Tag="6" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="2" Grid.Row="0" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="9" Click="BtnBet_Click" Tag="9" Background="#cc0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="3" Grid.Row="0" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="12" Click="BtnBet_Click" Tag="12" Background="#cc0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="4" Grid.Row="0" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="15" Click="BtnBet_Click" Tag="15" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="5" Grid.Row="0" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="18" Click="BtnBet_Click" Tag="18" Background="#cc0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="6" Grid.Row="0" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="21" Click="BtnBet_Click" Tag="21" Background="#cc0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="7" Grid.Row="0" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="24" Click="BtnBet_Click" Tag="24" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="8" Grid.Row="0" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="27" Click="BtnBet_Click" Tag="27" Background="#cc0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="9" Grid.Row="0" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="30" Click="BtnBet_Click" Tag="30" Background="#cc0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="10" Grid.Row="0" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="33" Click="BtnBet_Click" Tag="33" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="11" Grid.Row="0" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="36" Click="BtnBet_Click" Tag="36" Background="#cc0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="12" Grid.Row="0" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="2to1" Click="BtnBet_Click" Tag="Col3" Background="Transparent" Foreground="White" FontWeight="Bold" Grid.Column="13" Grid.Row="0" BorderBrush="White" Cursor="Hand"/>
+                <Grid Grid.Column="1" VerticalAlignment="Center" Margin="20,0,0,0">
+                    <Grid.Resources>
+                        <Style TargetType="Button" BasedOn="{StaticResource TableBetButtonStyle}"/>
+                    </Grid.Resources>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="50"/>
+                        <ColumnDefinition Width="45"/>
+                        <ColumnDefinition Width="45"/>
+                        <ColumnDefinition Width="45"/>
+                        <ColumnDefinition Width="45"/>
+                        <ColumnDefinition Width="45"/>
+                        <ColumnDefinition Width="45"/>
+                        <ColumnDefinition Width="45"/>
+                        <ColumnDefinition Width="45"/>
+                        <ColumnDefinition Width="45"/>
+                        <ColumnDefinition Width="45"/>
+                        <ColumnDefinition Width="45"/>
+                        <ColumnDefinition Width="45"/>
+                        <ColumnDefinition Width="50"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="50"/>
+                        <RowDefinition Height="50"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="50"/>
+                        <RowDefinition Height="50"/>
+                    </Grid.RowDefinitions>
 
-                <Button Content="2" Click="BtnBet_Click" Tag="2" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="1" Grid.Row="1" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="5" Click="BtnBet_Click" Tag="5" Background="#cc0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="2" Grid.Row="1" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="8" Click="BtnBet_Click" Tag="8" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="3" Grid.Row="1" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="11" Click="BtnBet_Click" Tag="11" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="4" Grid.Row="1" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="14" Click="BtnBet_Click" Tag="14" Background="#cc0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="5" Grid.Row="1" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="17" Click="BtnBet_Click" Tag="17" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="6" Grid.Row="1" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="20" Click="BtnBet_Click" Tag="20" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="7" Grid.Row="1" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="23" Click="BtnBet_Click" Tag="23" Background="#cc0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="8" Grid.Row="1" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="26" Click="BtnBet_Click" Tag="26" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="9" Grid.Row="1" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="29" Click="BtnBet_Click" Tag="29" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="10" Grid.Row="1" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="32" Click="BtnBet_Click" Tag="32" Background="#cc0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="11" Grid.Row="1" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="35" Click="BtnBet_Click" Tag="35" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="12" Grid.Row="1" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="2to1" Click="BtnBet_Click" Tag="Col2" Background="Transparent" Foreground="White" FontWeight="Bold" Grid.Column="13" Grid.Row="1" BorderBrush="White" Cursor="Hand"/>
+                    <Button Content="0" Click="BtnBet_Click" Tag="0" Background="#006400" Foreground="White" FontSize="20" FontWeight="Bold" Grid.Column="0" Grid.RowSpan="3" Margin="2"/>
+                    <Button Content="3" Click="BtnBet_Click" Tag="3" Background="#8B0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="1" Grid.Row="0" Margin="2"/>
+                    <Button Content="6" Click="BtnBet_Click" Tag="6" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="2" Grid.Row="0" Margin="2"/>
+                    <Button Content="9" Click="BtnBet_Click" Tag="9" Background="#8B0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="3" Grid.Row="0" Margin="2"/>
+                    <Button Content="12" Click="BtnBet_Click" Tag="12" Background="#8B0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="4" Grid.Row="0" Margin="2"/>
+                    <Button Content="15" Click="BtnBet_Click" Tag="15" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="5" Grid.Row="0" Margin="2"/>
+                    <Button Content="18" Click="BtnBet_Click" Tag="18" Background="#8B0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="6" Grid.Row="0" Margin="2"/>
+                    <Button Content="21" Click="BtnBet_Click" Tag="21" Background="#8B0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="7" Grid.Row="0" Margin="2"/>
+                    <Button Content="24" Click="BtnBet_Click" Tag="24" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="8" Grid.Row="0" Margin="2"/>
+                    <Button Content="27" Click="BtnBet_Click" Tag="27" Background="#8B0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="9" Grid.Row="0" Margin="2"/>
+                    <Button Content="30" Click="BtnBet_Click" Tag="30" Background="#8B0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="10" Grid.Row="0" Margin="2"/>
+                    <Button Content="33" Click="BtnBet_Click" Tag="33" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="11" Grid.Row="0" Margin="2"/>
+                    <Button Content="36" Click="BtnBet_Click" Tag="36" Background="#8B0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="12" Grid.Row="0" Margin="2"/>
+                    <Button Content="2to1" Click="BtnBet_Click" Tag="Col3" Background="Transparent" Foreground="#FFD700" FontWeight="Bold" Grid.Column="13" Grid.Row="0" Margin="2"/>
 
-                <Button Content="1" Click="BtnBet_Click" Tag="1" Background="#cc0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="1" Grid.Row="2" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="4" Click="BtnBet_Click" Tag="4" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="2" Grid.Row="2" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="7" Click="BtnBet_Click" Tag="7" Background="#cc0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="3" Grid.Row="2" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="10" Click="BtnBet_Click" Tag="10" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="4" Grid.Row="2" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="13" Click="BtnBet_Click" Tag="13" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="5" Grid.Row="2" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="16" Click="BtnBet_Click" Tag="16" Background="#cc0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="6" Grid.Row="2" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="19" Click="BtnBet_Click" Tag="19" Background="#cc0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="7" Grid.Row="2" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="22" Click="BtnBet_Click" Tag="22" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="8" Grid.Row="2" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="25" Click="BtnBet_Click" Tag="25" Background="#cc0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="9" Grid.Row="2" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="28" Click="BtnBet_Click" Tag="28" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="10" Grid.Row="2" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="31" Click="BtnBet_Click" Tag="31" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="11" Grid.Row="2" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="34" Click="BtnBet_Click" Tag="34" Background="#cc0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="12" Grid.Row="2" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="2to1" Click="BtnBet_Click" Tag="Col1" Background="Transparent" Foreground="White" FontWeight="Bold" Grid.Column="13" Grid.Row="2" BorderBrush="White" Cursor="Hand"/>
+                    <Button Content="2" Click="BtnBet_Click" Tag="2" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="1" Grid.Row="1" Margin="2"/>
+                    <Button Content="5" Click="BtnBet_Click" Tag="5" Background="#8B0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="2" Grid.Row="1" Margin="2"/>
+                    <Button Content="8" Click="BtnBet_Click" Tag="8" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="3" Grid.Row="1" Margin="2"/>
+                    <Button Content="11" Click="BtnBet_Click" Tag="11" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="4" Grid.Row="1" Margin="2"/>
+                    <Button Content="14" Click="BtnBet_Click" Tag="14" Background="#8B0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="5" Grid.Row="1" Margin="2"/>
+                    <Button Content="17" Click="BtnBet_Click" Tag="17" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="6" Grid.Row="1" Margin="2"/>
+                    <Button Content="20" Click="BtnBet_Click" Tag="20" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="7" Grid.Row="1" Margin="2"/>
+                    <Button Content="23" Click="BtnBet_Click" Tag="23" Background="#8B0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="8" Grid.Row="1" Margin="2"/>
+                    <Button Content="26" Click="BtnBet_Click" Tag="26" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="9" Grid.Row="1" Margin="2"/>
+                    <Button Content="29" Click="BtnBet_Click" Tag="29" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="10" Grid.Row="1" Margin="2"/>
+                    <Button Content="32" Click="BtnBet_Click" Tag="32" Background="#8B0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="11" Grid.Row="1" Margin="2"/>
+                    <Button Content="35" Click="BtnBet_Click" Tag="35" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="12" Grid.Row="1" Margin="2"/>
+                    <Button Content="2to1" Click="BtnBet_Click" Tag="Col2" Background="Transparent" Foreground="#FFD700" FontWeight="Bold" Grid.Column="13" Grid.Row="1" Margin="2"/>
 
-                <Button Content="1st 12" Click="BtnBet_Click" Tag="1st12" Background="Transparent" Foreground="White" FontWeight="Bold" FontSize="16" Grid.Column="1" Grid.Row="3" Grid.ColumnSpan="4" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="2nd 12" Click="BtnBet_Click" Tag="2nd12" Background="Transparent" Foreground="White" FontWeight="Bold" FontSize="16" Grid.Column="5" Grid.Row="3" Grid.ColumnSpan="4" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="3rd 12" Click="BtnBet_Click" Tag="3rd12" Background="Transparent" Foreground="White" FontWeight="Bold" FontSize="16" Grid.Column="9" Grid.Row="3" Grid.ColumnSpan="4" BorderBrush="White" Cursor="Hand"/>
+                    <Button Content="1" Click="BtnBet_Click" Tag="1" Background="#8B0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="1" Grid.Row="2" Margin="2"/>
+                    <Button Content="4" Click="BtnBet_Click" Tag="4" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="2" Grid.Row="2" Margin="2"/>
+                    <Button Content="7" Click="BtnBet_Click" Tag="7" Background="#8B0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="3" Grid.Row="2" Margin="2"/>
+                    <Button Content="10" Click="BtnBet_Click" Tag="10" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="4" Grid.Row="2" Margin="2"/>
+                    <Button Content="13" Click="BtnBet_Click" Tag="13" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="5" Grid.Row="2" Margin="2"/>
+                    <Button Content="16" Click="BtnBet_Click" Tag="16" Background="#8B0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="6" Grid.Row="2" Margin="2"/>
+                    <Button Content="19" Click="BtnBet_Click" Tag="19" Background="#8B0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="7" Grid.Row="2" Margin="2"/>
+                    <Button Content="22" Click="BtnBet_Click" Tag="22" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="8" Grid.Row="2" Margin="2"/>
+                    <Button Content="25" Click="BtnBet_Click" Tag="25" Background="#8B0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="9" Grid.Row="2" Margin="2"/>
+                    <Button Content="28" Click="BtnBet_Click" Tag="28" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="10" Grid.Row="2" Margin="2"/>
+                    <Button Content="31" Click="BtnBet_Click" Tag="31" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="11" Grid.Row="2" Margin="2"/>
+                    <Button Content="34" Click="BtnBet_Click" Tag="34" Background="#8B0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="12" Grid.Row="2" Margin="2"/>
+                    <Button Content="2to1" Click="BtnBet_Click" Tag="Col1" Background="Transparent" Foreground="#FFD700" FontWeight="Bold" Grid.Column="13" Grid.Row="2" Margin="2"/>
 
-                <Button Content="1 to 18" Click="BtnBet_Click" Tag="1to18" Background="Transparent" Foreground="White" FontWeight="Bold" FontSize="14" Grid.Column="1" Grid.Row="4" Grid.ColumnSpan="2" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="EVEN" Click="BtnBet_Click" Tag="Even" Background="Transparent" Foreground="White" FontWeight="Bold" FontSize="14" Grid.Column="3" Grid.Row="4" Grid.ColumnSpan="2" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="RED" Click="BtnBet_Click" Tag="Red" Background="#cc0000" Foreground="White" FontWeight="Bold" FontSize="16" Grid.Column="5" Grid.Row="4" Grid.ColumnSpan="2" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="BLACK" Click="BtnBet_Click" Tag="Black" Background="#111" Foreground="White" FontWeight="Bold" FontSize="16" Grid.Column="7" Grid.Row="4" Grid.ColumnSpan="2" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="ODD" Click="BtnBet_Click" Tag="Odd" Background="Transparent" Foreground="White" FontWeight="Bold" FontSize="14" Grid.Column="9" Grid.Row="4" Grid.ColumnSpan="2" BorderBrush="White" Cursor="Hand"/>
-                <Button Content="19 to 36" Click="BtnBet_Click" Tag="19to36" Background="Transparent" Foreground="White" FontWeight="Bold" FontSize="14" Grid.Column="11" Grid.Row="4" Grid.ColumnSpan="2" BorderBrush="White" Cursor="Hand"/>
+                    <Button Content="1st 12" Click="BtnBet_Click" Tag="1st12" Background="Transparent" Foreground="White" FontWeight="Bold" FontSize="16" Grid.Column="1" Grid.Row="3" Grid.ColumnSpan="4" Margin="2"/>
+                    <Button Content="2nd 12" Click="BtnBet_Click" Tag="2nd12" Background="Transparent" Foreground="White" FontWeight="Bold" FontSize="16" Grid.Column="5" Grid.Row="3" Grid.ColumnSpan="4" Margin="2"/>
+                    <Button Content="3rd 12" Click="BtnBet_Click" Tag="3rd12" Background="Transparent" Foreground="White" FontWeight="Bold" FontSize="16" Grid.Column="9" Grid.Row="3" Grid.ColumnSpan="4" Margin="2"/>
+
+                    <Button Content="1-18" Click="BtnBet_Click" Tag="1to18" Background="Transparent" Foreground="White" FontWeight="Bold" FontSize="14" Grid.Column="1" Grid.Row="4" Grid.ColumnSpan="2" Margin="2"/>
+                    <Button Content="EVEN" Click="BtnBet_Click" Tag="Even" Background="Transparent" Foreground="White" FontWeight="Bold" FontSize="14" Grid.Column="3" Grid.Row="4" Grid.ColumnSpan="2" Margin="2"/>
+                    <Button Content="RED" Click="BtnBet_Click" Tag="Red" Background="#8B0000" Foreground="White" FontWeight="Bold" FontSize="16" Grid.Column="5" Grid.Row="4" Grid.ColumnSpan="2" Margin="2"/>
+                    <Button Content="BLACK" Click="BtnBet_Click" Tag="Black" Background="#111" Foreground="White" FontWeight="Bold" FontSize="16" Grid.Column="7" Grid.Row="4" Grid.ColumnSpan="2" Margin="2"/>
+                    <Button Content="ODD" Click="BtnBet_Click" Tag="Odd" Background="Transparent" Foreground="White" FontWeight="Bold" FontSize="14" Grid.Column="9" Grid.Row="4" Grid.ColumnSpan="2" Margin="2"/>
+                    <Button Content="19-36" Click="BtnBet_Click" Tag="19to36" Background="Transparent" Foreground="White" FontWeight="Bold" FontSize="14" Grid.Column="11" Grid.Row="4" Grid.ColumnSpan="2" Margin="2"/>
+                </Grid>
+            </Grid>
+
+            <Border Grid.Row="2" Background="#111" CornerRadius="15" Padding="15" Margin="0,15,0,0" BorderBrush="#FFD700" BorderThickness="1">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <TextBlock Text="MIZĂ (RON):" Foreground="White" FontSize="18" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="Bold"/>
+                    <TextBox x:Name="TxtBetAmount" Text="10" Width="100" Height="45" FontSize="22" FontWeight="Bold" TextAlignment="Center" VerticalContentAlignment="Center" Background="#222" Foreground="#FFD700" BorderBrush="#FFD700">
+                        <TextBox.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="8"/>
+                            </Style>
+                        </TextBox.Resources>
+                    </TextBox>
+
+                    <Button x:Name="BtnSpin" Click="BtnSpin_Click" Content="🎲 SPIN!" Width="200" Height="50" Margin="30,0,0,0" Background="#FFD700" Foreground="Black" FontSize="22" FontWeight="Black" Cursor="Hand">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="10"/>
+                            </Style>
+                        </Button.Resources>
+                        <Button.Effect>
+                            <DropShadowEffect Color="#FFD700" BlurRadius="15" ShadowDepth="0" Opacity="0.5"/>
+                        </Button.Effect>
+                    </Button>
+
+                    <TextBlock x:Name="TxtStatus" Text="Plasează miza și dă SPIN!" Foreground="LightGray" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" Margin="30,0,0,0"/>
+                </StackPanel>
+            </Border>
+
+            <Grid x:Name="VictoryOverlay" Visibility="Collapsed" Opacity="0" IsHitTestVisible="False" Grid.RowSpan="3">
+                <Grid.Background>
+                    <SolidColorBrush Color="Black" Opacity="0.9"/>
+                </Grid.Background>
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock x:Name="TxtWin" Text="🔥 AI CÂȘTIGAT! 🔥" Foreground="#FFD700" FontSize="80" FontWeight="Black" HorizontalAlignment="Center" RenderTransformOrigin="0.5,0.5">
+                        <TextBlock.RenderTransform>
+                            <ScaleTransform x:Name="WinTextScale" ScaleX="0" ScaleY="0"/>
+                        </TextBlock.RenderTransform>
+                    </TextBlock>
+                    <TextBlock Text="DOREȘTI SĂ DUBLEZI?" Foreground="White" FontSize="28" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,30,0,20"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Button x:Name="BtnDoubleRed" Click="BtnDoubleRed_Click" Content="ROȘU ♥" Background="#cc0000" Foreground="White" Width="180" Height="60" FontSize="24" FontWeight="Bold" Margin="10" Cursor="Hand">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="10"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                        <Button x:Name="BtnDoubleBlack" Click="BtnDoubleBlack_Click" Content="NEGRU ♠" Background="#111" Foreground="White" Width="180" Height="60" FontSize="24" FontWeight="Bold" Margin="10" Cursor="Hand" BorderBrush="White" BorderThickness="1">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="10"/>
+                                </Style>
+                            </Button.Resources>
+                        </Button>
+                    </StackPanel>
+                    <Button x:Name="BtnCollect" Click="BtnCollect_Click" Content="💰 COLECTEAZĂ BĂNUȚII" Background="#FFD700" Foreground="Black" Width="380" Height="50" FontSize="22" FontWeight="Black" Margin="0,30,0,0" Cursor="Hand">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="10"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+                </StackPanel>
+            </Grid>
+
+            <Grid x:Name="DoubleSuccessOverlay" Visibility="Collapsed" Opacity="0" IsHitTestVisible="False" Grid.RowSpan="3">
+                <Grid.Background>
+                    <SolidColorBrush Color="Black" Opacity="0.9"/>
+                </Grid.Background>
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock x:Name="TxtDoubleMsg" Text="⭐ AI DUBLAT! ⭐" Foreground="#00FF00" FontSize="90" FontWeight="Black" HorizontalAlignment="Center"/>
+                    <TextBlock Text="SUMA A FOST ACTUALIZATĂ" Foreground="White" FontSize="22" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,10,0,40"/>
+                    <Button x:Name="BtnCloseDouble" Click="BtnCloseDouble_Click" Content="OK, ÎNCHIDE" Background="#FFD700" Foreground="Black" Width="250" Height="50" FontSize="22" FontWeight="Black" Cursor="Hand">
+                        <Button.Resources>
+                            <Style TargetType="Border">
+                                <Setter Property="CornerRadius" Value="10"/>
+                            </Style>
+                        </Button.Resources>
+                    </Button>
+                </StackPanel>
             </Grid>
         </Grid>
-
-        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="10">
-            <TextBlock Text="MIZĂ (RON):" Foreground="White" FontSize="18" VerticalAlignment="Center" Margin="0,0,10,0" FontWeight="Bold"/>
-            <TextBox x:Name="TxtBetAmount" Text="10" Width="100" Height="40" FontSize="20" TextAlignment="Center" VerticalContentAlignment="Center"/>
-            <Button Content="SPIN" Click="BtnSpin_Click" Width="200" Height="50" Margin="20,0,0,0" Background="Gold" FontSize="20" FontWeight="Bold" Cursor="Hand"/>
-            <TextBlock x:Name="TxtStatus" Text="Apasă pe tabel pentru a paria!" Foreground="LightGreen" FontSize="18" FontWeight="Bold" VerticalAlignment="Center" Margin="30,0,0,0"/>
-        </StackPanel>
-    </Grid>
+    </Border>
 </Window>
