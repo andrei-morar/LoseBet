@@ -1,51 +1,87 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 
 namespace LoseBet.Desktop
 {
     public partial class SizzlingHotWindow : Window
     {
         private decimal _balance;
-        private string _username;
+        private string? _username;
         private decimal _currentWin;
         private Random _random = new Random();
 
-        private string[] _symbols = { "7️⃣", "⭐", "🍉", "🍇", "🍊", "🍋", "🍒", "🍒" }; // Cireșe duble pt șansă mai mare
-        private TextBlock[,] _matrix = new TextBlock[3, 5];
+        // Numele fișierelor din folderul Assets
+        private string[] _symbols = { "7", "star", "watermelon", "grapes", "orange", "lemon", "cherry", "cherry" };
 
-        public SizzlingHotWindow(string username, string balance)
+        // Matricea de Border-uri pentru grilă
+        private Border[,] _matrix = new Border[3, 5];
+
+        public SizzlingHotWindow(string? username, string? balance)
         {
             InitializeComponent();
-            _username = username;
-            decimal.TryParse(balance, out _balance);
+            _username = username ?? "Guest";
+            decimal.TryParse(balance ?? "0", out _balance);
             UpdateUI();
             InitializeGrid();
         }
 
         private void InitializeGrid()
         {
+            SlotsGrid.Children.Clear();
+
             for (int r = 0; r < 3; r++)
             {
                 for (int c = 0; c < 5; c++)
                 {
-                    // AICI ERA PROBLEMA! Am adăugat Foreground = Brushes.White
-                    var tb = new TextBlock
+                    var container = new Border
                     {
-                        FontSize = 50,
-                        Foreground = Brushes.White,
-                        HorizontalAlignment = HorizontalAlignment.Center,
-                        VerticalAlignment = VerticalAlignment.Center,
-                        Text = "🍇"
+                        Margin = new Thickness(5),
+                        CornerRadius = new CornerRadius(10)
                     };
 
-                    _matrix[r, c] = tb;
-                    SlotsGrid.Children.Add(tb);
+                    var img = new Image
+                    {
+                        Stretch = Stretch.Uniform,
+                        Margin = new Thickness(5),
+                        VerticalAlignment = VerticalAlignment.Center,
+                        HorizontalAlignment = HorizontalAlignment.Center
+                    };
+
+                    container.Child = img;
+                    SetSymbol(container, img, "cherry");
+
+                    _matrix[r, c] = container;
+                    SlotsGrid.Children.Add(container);
                 }
+            }
+        }
+
+        private void SetSymbol(Border container, Image img, string symbolName)
+        {
+            container.Tag = symbolName;
+
+            try
+            {
+                string path = $"pack://application:,,,/Assets/{symbolName}.png";
+                img.Source = new BitmapImage(new Uri(path, UriKind.Absolute));
+                container.Background = Brushes.Transparent;
+            }
+            catch
+            {
+                container.Background = Brushes.DarkRed;
+                container.Child = new TextBlock
+                {
+                    Text = $"{symbolName}\n(lipsă poză)",
+                    Foreground = Brushes.White,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    TextAlignment = TextAlignment.Center,
+                    FontWeight = FontWeights.Bold
+                };
             }
         }
 
@@ -58,10 +94,22 @@ namespace LoseBet.Desktop
             BtnSpin.IsEnabled = false;
             PanelDublaj.Visibility = Visibility.Collapsed;
 
-            // Animație
+            TxtStatus.Text = "SUCCES!";
+            TxtStatus.Foreground = Brushes.White;
+
             for (int i = 0; i < 15; i++)
             {
-                foreach (var tb in _matrix) tb.Text = _symbols[_random.Next(_symbols.Length)];
+                foreach (var container in _matrix)
+                {
+                    string randomSymbol = _symbols[_random.Next(_symbols.Length)];
+
+                    if (!(container.Child is Image))
+                    {
+                        container.Child = new Image { Stretch = Stretch.Uniform, Margin = new Thickness(5) };
+                    }
+
+                    SetSymbol(container, (Image)container.Child!, randomSymbol);
+                }
                 await Task.Delay(60);
             }
 
@@ -71,43 +119,49 @@ namespace LoseBet.Desktop
         private void CheckWins(decimal bet)
         {
             decimal win = 0;
-            // Cele 5 linii: Rând 0, Rând 1, Rând 2, V (0,1,2,1,0), V-întors (2,1,0,1,2)
             int[][] lines = {
-                new int[] {0,0, 0,1, 0,2, 0,3, 0,4}, // Linia 1
-                new int[] {1,0, 1,1, 1,2, 1,3, 1,4}, // Linia 2
-                new int[] {2,0, 2,1, 2,2, 2,3, 2,4}, // Linia 3
-                new int[] {0,0, 1,1, 2,2, 1,3, 0,4}, // Linia 4
-                new int[] {2,0, 1,1, 0,2, 1,3, 2,4}  // Linia 5
+                new int[] {0,0, 0,1, 0,2, 0,3, 0,4},
+                new int[] {1,0, 1,1, 1,2, 1,3, 1,4},
+                new int[] {2,0, 2,1, 2,2, 2,3, 2,4},
+                new int[] {0,0, 1,1, 2,2, 1,3, 0,4},
+                new int[] {2,0, 1,1, 0,2, 1,3, 2,4}
             };
 
             foreach (var line in lines)
             {
-                string s1 = _matrix[line[0], line[1]].Text;
+                string s1 = _matrix[line[0], line[1]].Tag?.ToString() ?? "";
                 int count = 1;
+
                 for (int i = 2; i < 10; i += 2)
                 {
-                    if (_matrix[line[i], line[i + 1]].Text == s1) count++;
+                    if (_matrix[line[i], line[i + 1]].Tag?.ToString() == s1) count++;
                     else break;
                 }
 
-                if (count >= 3 || (s1 == "🍒" && count >= 2))
+                if (count >= 3 || (s1 == "cherry" && count >= 2))
+                {
                     win += CalculateSymbolWin(s1, count, bet);
+                }
             }
 
-            // Scatter (Steaua) - plătește oriunde
             int stars = 0;
-            foreach (var tb in _matrix) if (tb.Text == "⭐") stars++;
+            foreach (var container in _matrix)
+            {
+                if (container.Tag?.ToString() == "star") stars++;
+            }
             if (stars >= 3) win += bet * stars * 2;
 
             if (win > 0)
             {
                 _currentWin = win;
                 TxtStatus.Text = $"CÂȘTIG: {win} RON! DUBLĂM?";
+                TxtStatus.Foreground = Brushes.Gold;
                 PanelDublaj.Visibility = Visibility.Visible;
             }
             else
             {
                 TxtStatus.Text = "MAI ÎNCEARCĂ!";
+                TxtStatus.Foreground = Brushes.LightGray;
                 BtnSpin.IsEnabled = true;
             }
         }
@@ -115,15 +169,26 @@ namespace LoseBet.Desktop
         private decimal CalculateSymbolWin(string sym, int count, decimal bet)
         {
             decimal mult = count == 5 ? 100 : (count == 4 ? 20 : 5);
-            if (sym == "7️⃣") mult *= 10;
+            if (sym == "7") mult *= 10;
             return bet * mult;
         }
 
-        // --- Logica Dublaj & Colectare ---
         private void BtnGamble_Click(object sender, RoutedEventArgs e)
         {
-            if (_random.Next(0, 2) == 0) { _currentWin *= 2; TxtStatus.Text = $"DUBLAT: {_currentWin} RON"; }
-            else { _currentWin = 0; PanelDublaj.Visibility = Visibility.Collapsed; BtnSpin.IsEnabled = true; TxtStatus.Text = "AI PIERDUT!"; }
+            if (_random.Next(0, 2) == 0)
+            {
+                _currentWin *= 2;
+                TxtStatus.Text = $"DUBLAT: {_currentWin} RON";
+                TxtStatus.Foreground = Brushes.LimeGreen;
+            }
+            else
+            {
+                _currentWin = 0;
+                PanelDublaj.Visibility = Visibility.Collapsed;
+                BtnSpin.IsEnabled = true;
+                TxtStatus.Text = "AI PIERDUT!";
+                TxtStatus.Foreground = Brushes.Red;
+            }
         }
 
         private void BtnCollect_Click(object sender, RoutedEventArgs e)
@@ -133,9 +198,21 @@ namespace LoseBet.Desktop
             UpdateUI();
             PanelDublaj.Visibility = Visibility.Collapsed;
             BtnSpin.IsEnabled = true;
+            TxtStatus.Text = "BANI ÎNCASAȚI!";
+            TxtStatus.Foreground = Brushes.White;
         }
 
-        private void UpdateUI() => TxtBalance.Text = $"Sold: {_balance:0.00} RON";
-        private void BtnBack_Click(object sender, RoutedEventArgs e) { new SlotsLobbyWindow(_username, _balance.ToString()).Show(); this.Close(); }
+        private void UpdateUI() => TxtBalance.Text = $"{_balance:0.00}";
+
+        private void BtnBack_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // Folosim operatorul ! pentru a ignora avertismentele de null
+                new SlotsLobbyWindow(_username!, _balance.ToString()).Show();
+                this.Close();
+            }
+            catch { this.Close(); }
+        }
     }
 }

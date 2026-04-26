@@ -5,31 +5,33 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
+using System.Windows.Media.Effects;
+using System.Windows.Shapes;
 
 namespace LoseBet.Desktop
 {
     public partial class BlackjackGameWindow : Window
     {
         private decimal _balance;
-        private string _username;
+        private string? _username;
         private decimal _currentBet;
 
-        private List<string> _deck;
-        private List<string> _playerCards;
-        private List<string> _dealerCards;
+        private List<string> _deck = new List<string>();
+        private List<string> _playerCards = new List<string>();
+        private List<string> _dealerCards = new List<string>();
         private Random _random = new Random();
 
-        public BlackjackGameWindow(string username, string balance)
+        public BlackjackGameWindow(string? username, string? balance)
         {
             InitializeComponent();
-            _username = username;
-            decimal.TryParse(balance, out _balance);
+            _username = username ?? "Guest";
+            decimal.TryParse(balance ?? "0", out _balance);
             UpdateBalanceDisplay();
         }
 
         private void UpdateBalanceDisplay() => TxtBalance.Text = $"Sold: {_balance:0.00} RON";
 
-        // Creăm și amestecăm pachetul de cărți
         private void InitializeDeck()
         {
             _deck = new List<string>();
@@ -53,7 +55,6 @@ namespace LoseBet.Desktop
             return card;
         }
 
-        // Calculam scorul (Așii sunt 11 sau 1)
         private int CalculateScore(List<string> hand)
         {
             int score = 0;
@@ -76,23 +77,26 @@ namespace LoseBet.Desktop
             return score;
         }
 
-        // Desenăm cartea pe ecran vizual
         private UIElement CreateCardVisual(string cardStr, bool hidden = false)
         {
             Border b = new Border
             {
                 Width = 80,
-                Height = 110,
+                Height = 115,
                 Background = Brushes.White,
                 BorderBrush = Brushes.Black,
-                BorderThickness = new Thickness(2),
-                CornerRadius = new CornerRadius(5),
-                Margin = new Thickness(5)
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(6),
+                Margin = new Thickness(5),
+                Effect = new DropShadowEffect { Color = Colors.Black, BlurRadius = 5, ShadowDepth = 2, Opacity = 0.5 }
             };
 
             if (hidden)
             {
-                b.Background = Brushes.DarkRed; // Cartea întoarsă a dealerului
+                // SCHIMBARE AICI: Albastru închis pentru spatele cărții (se potrivește cu masa Classic)
+                b.Background = new SolidColorBrush(Color.FromRgb(0, 34, 102)); // Același albastru #002266
+                b.BorderBrush = Brushes.White;
+                b.BorderThickness = new Thickness(2);
             }
             else
             {
@@ -100,7 +104,7 @@ namespace LoseBet.Desktop
                 TextBlock txt = new TextBlock
                 {
                     Text = cardStr,
-                    FontSize = 24,
+                    FontSize = 26,
                     FontWeight = FontWeights.Bold,
                     Foreground = isRed ? Brushes.Red : Brushes.Black,
                     HorizontalAlignment = HorizontalAlignment.Center,
@@ -111,24 +115,64 @@ namespace LoseBet.Desktop
             return b;
         }
 
-        private void UpdateUI(bool hideDealerSecondCard = true)
+        private void AnimateCardFlying(UIElement card, bool isPlayer)
         {
-            PanelPlayerCards.Children.Clear();
-            foreach (var card in _playerCards) PanelPlayerCards.Children.Add(CreateCardVisual(card));
-            TxtPlayerScore.Text = $"Scorul tău: {CalculateScore(_playerCards)}";
+            TransformGroup group = new TransformGroup();
+            TranslateTransform trans = new TranslateTransform();
+            ScaleTransform scale = new ScaleTransform(0.5, 0.5);
+            RotateTransform rot = new RotateTransform(isPlayer ? 360 : -360);
 
-            PanelDealerCards.Children.Clear();
-            for (int i = 0; i < _dealerCards.Count; i++)
-            {
-                if (i == 1 && hideDealerSecondCard) PanelDealerCards.Children.Add(CreateCardVisual(_dealerCards[i], true));
-                else PanelDealerCards.Children.Add(CreateCardVisual(_dealerCards[i]));
-            }
+            trans.X = 400;
+            trans.Y = isPlayer ? -150 : 150;
 
-            if (hideDealerSecondCard) TxtDealerScore.Text = "Cărțile Dealerului: ?";
-            else TxtDealerScore.Text = $"Cărțile Dealerului: {CalculateScore(_dealerCards)}";
+            group.Children.Add(scale);
+            group.Children.Add(rot);
+            group.Children.Add(trans);
+
+            card.RenderTransformOrigin = new Point(0.5, 0.5);
+            card.RenderTransform = group;
+
+            DoubleAnimation moveX = new DoubleAnimation { To = 0, Duration = TimeSpan.FromSeconds(0.4), EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
+            DoubleAnimation moveY = new DoubleAnimation { To = 0, Duration = TimeSpan.FromSeconds(0.4), EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
+            DoubleAnimation scaleAnim = new DoubleAnimation { To = 1, Duration = TimeSpan.FromSeconds(0.4), EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
+            DoubleAnimation rotAnim = new DoubleAnimation { To = 0, Duration = TimeSpan.FromSeconds(0.4), EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
+            DoubleAnimation fade = new DoubleAnimation { From = 0, To = 1, Duration = TimeSpan.FromSeconds(0.2) };
+
+            trans.BeginAnimation(TranslateTransform.XProperty, moveX);
+            trans.BeginAnimation(TranslateTransform.YProperty, moveY);
+            scale.BeginAnimation(ScaleTransform.ScaleXProperty, scaleAnim);
+            scale.BeginAnimation(ScaleTransform.ScaleYProperty, scaleAnim);
+            rot.BeginAnimation(RotateTransform.AngleProperty, rotAnim);
+            card.BeginAnimation(UIElement.OpacityProperty, fade);
         }
 
-        private void BtnDeal_Click(object sender, RoutedEventArgs e)
+        private async Task DealCardToPlayer(string card)
+        {
+            _playerCards.Add(card);
+            var visual = CreateCardVisual(card, false);
+            PanelPlayerCards.Children.Add(visual);
+
+            AnimateCardFlying(visual, true);
+            TxtPlayerScore.Text = $"Scorul tău: {CalculateScore(_playerCards)}";
+
+            await Task.Delay(400);
+        }
+
+        private async Task DealCardToDealer(string card, bool hidden)
+        {
+            _dealerCards.Add(card);
+            var visual = CreateCardVisual(card, hidden);
+            PanelDealerCards.Children.Add(visual);
+
+            AnimateCardFlying(visual, false);
+
+            if (!hidden)
+                TxtDealerScore.Text = $"Cărțile Dealerului: {CalculateScore(new List<string> { card })}";
+
+            await Task.Delay(400);
+        }
+
+        private async void BtnDeal_Click(object sender, RoutedEventArgs e)
         {
             if (!decimal.TryParse(TxtBetAmount.Text, out _currentBet) || _currentBet <= 0 || _currentBet > _balance)
             {
@@ -139,25 +183,42 @@ namespace LoseBet.Desktop
             UpdateBalanceDisplay();
 
             InitializeDeck();
-            _playerCards = new List<string> { DrawCard(), DrawCard() };
-            _dealerCards = new List<string> { DrawCard(), DrawCard() };
+            _playerCards.Clear();
+            _dealerCards.Clear();
+            PanelPlayerCards.Children.Clear();
+            PanelDealerCards.Children.Clear();
+            TxtDealerScore.Text = "Cărțile Dealerului: ?";
 
             PanelBetting.Visibility = Visibility.Collapsed;
-            PanelActions.Visibility = Visibility.Visible;
-            TxtStatus.Text = "Hit (Trage) sau Stand (Stai)?";
+            TxtStatus.Text = "Se împart cărțile...";
             TxtStatus.Foreground = Brushes.White;
 
-            UpdateUI(true);
+            await DealCardToPlayer(DrawCard());
+            await DealCardToDealer(DrawCard(), false);
+            await DealCardToPlayer(DrawCard());
+            await DealCardToDealer(DrawCard(), true);
 
-            if (CalculateScore(_playerCards) == 21) EndGame(); // Ai prins Blackjack direct!
+            PanelActions.Visibility = Visibility.Visible;
+            TxtStatus.Text = "Hit (Trage) sau Stand (Stai)?";
+            TxtStatus.Foreground = Brushes.Gold;
+
+            if (CalculateScore(_playerCards) == 21) EndGame();
         }
 
-        private void BtnHit_Click(object sender, RoutedEventArgs e)
+        private async void BtnHit_Click(object sender, RoutedEventArgs e)
         {
-            _playerCards.Add(DrawCard());
-            UpdateUI(true);
+            BtnHit.IsEnabled = false; BtnStand.IsEnabled = false;
 
-            if (CalculateScore(_playerCards) > 21) EndGame(); // Ai sărit de 21
+            await DealCardToPlayer(DrawCard());
+
+            if (CalculateScore(_playerCards) > 21)
+            {
+                EndGame();
+            }
+            else
+            {
+                BtnHit.IsEnabled = true; BtnStand.IsEnabled = true;
+            }
         }
 
         private async void BtnStand_Click(object sender, RoutedEventArgs e)
@@ -165,14 +226,17 @@ namespace LoseBet.Desktop
             BtnHit.IsEnabled = false;
             BtnStand.IsEnabled = false;
 
-            UpdateUI(false); // Afișăm cartea ascunsă a dealerului
+            PanelDealerCards.Children.RemoveAt(1);
+            var revealedCard = CreateCardVisual(_dealerCards[1], false);
+            PanelDealerCards.Children.Insert(1, revealedCard);
 
-            // Dealerul trebuie să tragă până face minim 17
+            TxtDealerScore.Text = $"Cărțile Dealerului: {CalculateScore(_dealerCards)}";
+            await Task.Delay(800);
+
             while (CalculateScore(_dealerCards) < 17)
             {
-                await Task.Delay(1000);
-                _dealerCards.Add(DrawCard());
-                UpdateUI(false);
+                await DealCardToDealer(DrawCard(), false);
+                TxtDealerScore.Text = $"Cărțile Dealerului: {CalculateScore(_dealerCards)}";
             }
 
             EndGame();
@@ -182,47 +246,184 @@ namespace LoseBet.Desktop
         {
             BtnHit.IsEnabled = true;
             BtnStand.IsEnabled = true;
-            UpdateUI(false);
 
             int pScore = CalculateScore(_playerCards);
             int dScore = CalculateScore(_dealerCards);
 
-            if (pScore > 21)
-            {
-                TxtStatus.Text = "BUST! Ai depășit 21. Ai pierdut miza.";
-                TxtStatus.Foreground = Brushes.Tomato;
-            }
-            else if (dScore > 21 || pScore > dScore)
+            if (pScore <= 21 && (dScore > 21 || pScore > dScore))
             {
                 decimal win = _currentBet * 2;
-                if (pScore == 21 && _playerCards.Count == 2) win = _currentBet * 2.5m; // Blackjack-ul plătește mai mult!
+                if (pScore == 21 && _playerCards.Count == 2) win = _currentBet * 2.5m;
+
                 _balance += win;
-                TxtStatus.Text = $"CÂȘTIG! Primești {win} RON.";
-                TxtStatus.Foreground = Brushes.LightGreen;
-            }
-            else if (pScore == dScore)
-            {
-                _balance += _currentBet; // Egalitate, primești miza înapoi
-                TxtStatus.Text = "EGALITATE (PUSH). Miza returnată.";
-                TxtStatus.Foreground = Brushes.Yellow;
+                UpdateBalanceDisplay();
+
+                TxtWinAmount.Text = $"+ {win:0.00} RON";
+                LanseazaArtificii(); // Lansăm explozia magică
             }
             else
             {
-                TxtStatus.Text = "DEALERUL CÂȘTIGĂ!";
-                TxtStatus.Foreground = Brushes.Tomato;
-            }
+                if (pScore > 21)
+                {
+                    TxtStatus.Text = "BUST! Ai depășit 21. Ai pierdut miza.";
+                    TxtStatus.Foreground = Brushes.Tomato;
+                }
+                else if (pScore == dScore)
+                {
+                    _balance += _currentBet;
+                    UpdateBalanceDisplay();
+                    TxtStatus.Text = "EGALITATE (PUSH). Miza returnată.";
+                    TxtStatus.Foreground = Brushes.LightBlue;
+                }
+                else
+                {
+                    TxtStatus.Text = "DEALERUL CÂȘTIGĂ!";
+                    TxtStatus.Foreground = Brushes.Tomato;
+                }
 
-            UpdateBalanceDisplay();
+                PanelBetting.Visibility = Visibility.Visible;
+                PanelActions.Visibility = Visibility.Collapsed;
+            }
+        }
+
+        // ================= EFECT DE EXPLOZIE 3D (ZBOARĂ SPRE TINE) =================
+        private void LanseazaArtificii()
+        {
+            WinOverlay.Visibility = Visibility.Visible;
+            WinOverlay.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromSeconds(0.2)));
+
+            // 1. Textul "Sare" agresiv spre tine
+            DoubleAnimation textAnim = new DoubleAnimation
+            {
+                From = 0,
+                To = 1.1,
+                Duration = TimeSpan.FromSeconds(0.6),
+                EasingFunction = new BackEase { EasingMode = EasingMode.EaseOut, Amplitude = 1.5 }
+            };
+            TxtWinScale.BeginAnimation(ScaleTransform.ScaleXProperty, textAnim);
+            TxtWinScale.BeginAnimation(ScaleTransform.ScaleYProperty, textAnim);
+
+            // 2. Pulsarea Trompetelor
+            DoubleAnimation trumpetPulse = new DoubleAnimation
+            {
+                From = 1.0,
+                To = 1.3,
+                Duration = TimeSpan.FromSeconds(0.3),
+                AutoReverse = true,
+                RepeatBehavior = RepeatBehavior.Forever
+            };
+            TrumpetLeftScale.BeginAnimation(ScaleTransform.ScaleXProperty, trumpetPulse);
+            TrumpetLeftScale.BeginAnimation(ScaleTransform.ScaleYProperty, trumpetPulse);
+
+            DoubleAnimation trumpetPulseRight = new DoubleAnimation
+            {
+                From = -1.0,
+                To = -1.3,
+                Duration = TimeSpan.FromSeconds(0.3),
+                AutoReverse = true,
+                RepeatBehavior = RepeatBehavior.Forever
+            };
+            TrumpetRightScale.BeginAnimation(ScaleTransform.ScaleXProperty, trumpetPulseRight);
+            TrumpetRightScale.BeginAnimation(ScaleTransform.ScaleYProperty, trumpetPulse);
+
+            // 3. ARTIFICIILE EXPLODEAZĂ DIN CENTRU SPRE ECRAN (Efect 3D)
+            FireworksCanvas.Children.Clear();
+
+            // Centrul exploziei (fix sub text)
+            double centerX = WinOverlay.ActualWidth > 0 ? WinOverlay.ActualWidth / 2 : 500;
+            double centerY = WinOverlay.ActualHeight > 0 ? WinOverlay.ActualHeight / 2 - 50 : 350;
+
+            Color[] culori = new Color[] { Colors.Gold, Colors.Orange, Colors.Red, Colors.LimeGreen, Colors.Cyan, Colors.White };
+
+            for (int i = 0; i < 120; i++) // 120 de particule pentru un impact major
+            {
+                bool isTrail = _random.Next(0, 3) == 0; // O parte din ele vor fi dâre lungi de lumină
+                Shape particle;
+
+                if (isTrail)
+                {
+                    // Dâră de lumină
+                    particle = new Rectangle
+                    {
+                        Width = _random.Next(30, 80),
+                        Height = _random.Next(2, 5),
+                        Fill = new SolidColorBrush(culori[_random.Next(culori.Length)]),
+                        Effect = new DropShadowEffect { Color = Colors.White, BlurRadius = 15, ShadowDepth = 0 } // Glow puternic
+                    };
+                }
+                else
+                {
+                    // Stele / Puncte
+                    particle = new Ellipse
+                    {
+                        Width = _random.Next(8, 20),
+                        Height = _random.Next(8, 20),
+                        Fill = new SolidColorBrush(culori[_random.Next(culori.Length)]),
+                        Effect = new DropShadowEffect { Color = Colors.White, BlurRadius = 15, ShadowDepth = 0 }
+                    };
+                }
+
+                // Generăm mișcarea
+                double angle = _random.NextDouble() * 2 * Math.PI;
+                double dist = _random.Next(200, 900); // Se duc mult în afara ecranului
+                double duration = 1.0 + _random.NextDouble() * 1.5; // Între 1 și 2.5 secunde
+
+                // Pregătim elementele pentru transformări
+                TransformGroup tg = new TransformGroup();
+
+                // Rotim dârele de lumină astfel încât să urmeze direcția în care zboară
+                if (isTrail) tg.Children.Add(new RotateTransform(angle * 180 / Math.PI));
+                else tg.Children.Add(new RotateTransform(_random.Next(0, 360)));
+
+                ScaleTransform scaleT = new ScaleTransform(0.1, 0.1); // Pleacă microscopice (din spatele textului)
+                tg.Children.Add(scaleT);
+
+                TranslateTransform transT = new TranslateTransform(centerX, centerY);
+                tg.Children.Add(transT);
+
+                particle.RenderTransformOrigin = new Point(0.5, 0.5);
+                particle.RenderTransform = tg;
+                FireworksCanvas.Children.Add(particle);
+
+                // Animație 1: Deplasare
+                DoubleAnimation animX = new DoubleAnimation(centerX, centerX + Math.Cos(angle) * dist, TimeSpan.FromSeconds(duration)) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
+                DoubleAnimation animY = new DoubleAnimation(centerY, centerY + Math.Sin(angle) * dist, TimeSpan.FromSeconds(duration)) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
+
+                // Animație 2: Mărire (creează iluzia că zboară SPRE TINE)
+                double finalScale = isTrail ? 1.5 : _random.NextDouble() * 2 + 1.5; // Se fac mari de 2-3 ori
+                DoubleAnimation animScale = new DoubleAnimation(0.1, finalScale, TimeSpan.FromSeconds(duration)) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn } };
+
+                // Animație 3: Fade Out la final
+                DoubleAnimation animOpacity = new DoubleAnimation(1, 0, TimeSpan.FromSeconds(duration)) { BeginTime = TimeSpan.FromSeconds(duration * 0.5) };
+
+                transT.BeginAnimation(TranslateTransform.XProperty, animX);
+                transT.BeginAnimation(TranslateTransform.YProperty, animY);
+                scaleT.BeginAnimation(ScaleTransform.ScaleXProperty, animScale);
+                scaleT.BeginAnimation(ScaleTransform.ScaleYProperty, animScale);
+                particle.BeginAnimation(UIElement.OpacityProperty, animOpacity);
+            }
+        }
+
+        private void BtnCloseWin_Click(object sender, RoutedEventArgs e)
+        {
+            TrumpetLeftScale.BeginAnimation(ScaleTransform.ScaleXProperty, null);
+            TrumpetLeftScale.BeginAnimation(ScaleTransform.ScaleYProperty, null);
+            TrumpetRightScale.BeginAnimation(ScaleTransform.ScaleXProperty, null);
+            TrumpetRightScale.BeginAnimation(ScaleTransform.ScaleYProperty, null);
+
+            WinOverlay.Visibility = Visibility.Collapsed;
+            FireworksCanvas.Children.Clear();
+
             PanelBetting.Visibility = Visibility.Visible;
             PanelActions.Visibility = Visibility.Collapsed;
+            TxtStatus.Text = "Pune miza și apasă DEAL!";
+            TxtStatus.Foreground = Brushes.Gold;
         }
 
         private void BtnBack_Click(object sender, RoutedEventArgs e)
         {
-            // Ne întoarcem în Lobby
-            BlackJackLobbyWindow lobby = new BlackJackLobbyWindow(_username, _balance.ToString());
-            lobby.Show();
-            this.Close();
+            try { BlackJackLobbyWindow lobby = new BlackJackLobbyWindow(_username, _balance.ToString()); lobby.Show(); this.Close(); }
+            catch { this.Close(); }
         }
     }
 }

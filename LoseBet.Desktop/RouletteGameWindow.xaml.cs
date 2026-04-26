@@ -14,7 +14,7 @@ namespace LoseBet.Desktop
         private decimal _balance;
         private string _username;
         private string _pariuSelectat = "";
-        private decimal _sumaDeDublat = 0;
+        private decimal _castigCurent = 0; // Redenumit din _sumaDeDublat pentru claritate
         private Random _random = new Random();
 
         private double _currentWheelAngle = 0;
@@ -84,7 +84,7 @@ namespace LoseBet.Desktop
             try
             {
                 if (string.IsNullOrEmpty(_pariuSelectat)) { MessageBox.Show("Selectează un pariu!"); return; }
-                if (!decimal.TryParse(TxtBetAmount.Text, out decimal miza) || miza <= 0 || miza > _balance) { MessageBox.Show("Suma invalidă!"); return; }
+                if (!decimal.TryParse(TxtBetAmount.Text, out decimal miza) || miza <= 0 || miza > _balance) { MessageBox.Show("Suma invalidă sau fonduri insuficiente!"); return; }
 
                 _balance -= miza; UpdateBalanceDisplay();
                 BtnSpin.IsEnabled = false; TxtStatus.Text = "Norocul se învârte..."; TxtWheelResult.Opacity = 0;
@@ -103,7 +103,6 @@ namespace LoseBet.Desktop
                 double ballTargetAngle = _currentBallAngle + (360 * 8) + randomVisualOffset;
 
                 // Roata trebuie să se oprească astfel încât buzunarul numărului să fie sub bilă
-                // Formula: UnghiulBilei - UnghiulSlotuluiPeRoată
                 double wheelTargetAngle = ballTargetAngle - slotAngle;
 
                 // Animație ROATĂ
@@ -144,8 +143,8 @@ namespace LoseBet.Desktop
 
             if (castigat)
             {
-                _sumaDeDublat = miza * multiplicator;
-                TxtStatus.Text = $"CÂȘTIG! {rezultat} a fost norocos. Dublezi {_sumaDeDublat} RON?";
+                _castigCurent = miza * multiplicator;
+                TxtStatus.Text = $"CÂȘTIG! {rezultat} a fost norocos. Ai câștigat {_castigCurent} RON!";
                 TxtStatus.Foreground = Brushes.LightGreen;
                 ArataEcranVictorie();
             }
@@ -153,49 +152,49 @@ namespace LoseBet.Desktop
             {
                 TxtStatus.Text = $"Ai pierdut. Numărul a fost {rezultat}.";
                 TxtStatus.Foreground = Brushes.Tomato;
-                _pariuSelectat = ""; BtnSpin.IsEnabled = true;
+                _pariuSelectat = "";
+                BtnSpin.IsEnabled = true;
             }
         }
 
         private void ArataEcranVictorie()
         {
-            VictoryOverlay.Visibility = Visibility.Visible; VictoryOverlay.IsHitTestVisible = true;
+            VictoryOverlay.Visibility = Visibility.Visible;
+            VictoryOverlay.IsHitTestVisible = true;
             VictoryOverlay.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation { To = 1, Duration = TimeSpan.FromSeconds(0.5) });
+
             DoubleAnimation bounce = new DoubleAnimation { From = 0, To = 1, Duration = TimeSpan.FromSeconds(1), EasingFunction = new ElasticEase { EasingMode = EasingMode.EaseOut } };
-            WinTextScale.BeginAnimation(ScaleTransform.ScaleXProperty, bounce); WinTextScale.BeginAnimation(ScaleTransform.ScaleYProperty, bounce);
+            WinTextScale.BeginAnimation(ScaleTransform.ScaleXProperty, bounce);
+            WinTextScale.BeginAnimation(ScaleTransform.ScaleYProperty, bounce);
         }
 
-        private async void ProceseazaDublajul()
+        private void BtnCollect_Click(object sender, RoutedEventArgs e)
         {
-            if (_random.Next(0, 2) == 1)
-            {
-                _sumaDeDublat *= 2; TxtDoubleMsg.Text = "⭐ AI DUBLAT! ⭐"; TxtDoubleMsg.Foreground = Brushes.LimeGreen;
-                DoubleSuccessOverlay.Visibility = Visibility.Visible; DoubleSuccessOverlay.IsHitTestVisible = true;
-                DoubleSuccessOverlay.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation { To = 1, Duration = TimeSpan.FromSeconds(0.3) });
-                VictoryOverlay.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation { To = 0, Duration = TimeSpan.FromSeconds(0.3) });
-                await Task.Delay(300); VictoryOverlay.Visibility = Visibility.Collapsed;
-            }
-            else
-            {
-                _sumaDeDublat = 0; TxtStatus.Text = "Ai pierdut tot la dublaj!"; TxtStatus.Foreground = Brushes.Red;
-                AscundeToateOverlayurile();
-            }
+            _balance += _castigCurent;
+            UpdateBalanceDisplay();
+            TxtStatus.Text = $"Ai colectat {_castigCurent} RON.";
+            _castigCurent = 0;
+            AscundeToateOverlayurile();
         }
-
-        private void BtnDoubleRed_Click(object sender, RoutedEventArgs e) => ProceseazaDublajul();
-        private void BtnDoubleBlack_Click(object sender, RoutedEventArgs e) => ProceseazaDublajul();
-        private void BtnCollect_Click(object sender, RoutedEventArgs e) { _balance += _sumaDeDublat; UpdateBalanceDisplay(); AscundeToateOverlayurile(); }
-        private void BtnCloseDouble_Click(object sender, RoutedEventArgs e) { _balance += _sumaDeDublat; UpdateBalanceDisplay(); AscundeToateOverlayurile(); }
 
         private void AscundeToateOverlayurile()
         {
-            VictoryOverlay.BeginAnimation(UIElement.OpacityProperty, null); DoubleSuccessOverlay.BeginAnimation(UIElement.OpacityProperty, null);
-            VictoryOverlay.Visibility = Visibility.Collapsed; DoubleSuccessOverlay.Visibility = Visibility.Collapsed;
-            VictoryOverlay.IsHitTestVisible = false; DoubleSuccessOverlay.IsHitTestVisible = false;
-            BtnSpin.IsEnabled = true; _pariuSelectat = "";
+            // Oprim animațiile care țin vizibilitatea blocată
+            VictoryOverlay.BeginAnimation(UIElement.OpacityProperty, null);
+            WinTextScale.BeginAnimation(ScaleTransform.ScaleXProperty, null);
+            WinTextScale.BeginAnimation(ScaleTransform.ScaleYProperty, null);
+
+            // Ascundem ecranul
+            VictoryOverlay.Visibility = Visibility.Collapsed;
+            VictoryOverlay.Opacity = 0;
+            VictoryOverlay.IsHitTestVisible = false;
+
+            BtnSpin.IsEnabled = true;
+            _pariuSelectat = "";
         }
 
         private void UpdateBalanceDisplay() => TxtBalance.Text = $"Sold: {_balance:0.00} RON";
+
         private void BtnBack_Click(object sender, RoutedEventArgs e)
         {
             try { RouletteLobbyWindow lobby = new RouletteLobbyWindow(_username, _balance.ToString()); lobby.Show(); this.Close(); }
