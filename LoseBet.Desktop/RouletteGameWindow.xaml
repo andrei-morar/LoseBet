@@ -153,6 +153,7 @@
                     </Grid.RowDefinitions>
 
                     <Button Content="0" Click="BtnBet_Click" Tag="0" Background="#006400" Foreground="White" FontSize="20" FontWeight="Bold" Grid.Column="0" Grid.RowSpan="3" Margin="2"/>
+
                     <Button Content="3" Click="BtnBet_Click" Tag="3" Background="#8B0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="1" Grid.Row="0" Margin="2"/>
                     <Button Content="6" Click="BtnBet_Click" Tag="6" Background="#111" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="2" Grid.Row="0" Margin="2"/>
                     <Button Content="9" Click="BtnBet_Click" Tag="9" Background="#8B0000" Foreground="White" FontSize="18" FontWeight="Bold" Grid.Column="3" Grid.Row="0" Margin="2"/>
@@ -244,23 +245,7 @@
                             <ScaleTransform x:Name="WinTextScale" ScaleX="0" ScaleY="0"/>
                         </TextBlock.RenderTransform>
                     </TextBlock>
-                    <TextBlock Text="DOREȘTI SĂ DUBLEZI?" Foreground="White" FontSize="28" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,30,0,20"/>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                        <Button x:Name="BtnDoubleRed" Click="BtnDoubleRed_Click" Content="ROȘU ♥" Background="#cc0000" Foreground="White" Width="180" Height="60" FontSize="24" FontWeight="Bold" Margin="10" Cursor="Hand">
-                            <Button.Resources>
-                                <Style TargetType="Border">
-                                    <Setter Property="CornerRadius" Value="10"/>
-                                </Style>
-                            </Button.Resources>
-                        </Button>
-                        <Button x:Name="BtnDoubleBlack" Click="BtnDoubleBlack_Click" Content="NEGRU ♠" Background="#111" Foreground="White" Width="180" Height="60" FontSize="24" FontWeight="Bold" Margin="10" Cursor="Hand" BorderBrush="White" BorderThickness="1">
-                            <Button.Resources>
-                                <Style TargetType="Border">
-                                    <Setter Property="CornerRadius" Value="10"/>
-                                </Style>
-                            </Button.Resources>
-                        </Button>
-                    </StackPanel>
+
                     <Button x:Name="BtnCollect" Click="BtnCollect_Click" Content="💰 COLECTEAZĂ BĂNUȚII" Background="#FFD700" Foreground="Black" Width="380" Height="50" FontSize="22" FontWeight="Black" Margin="0,30,0,0" Cursor="Hand">
                         <Button.Resources>
                             <Style TargetType="Border">
@@ -271,22 +256,6 @@
                 </StackPanel>
             </Grid>
 
-            <Grid x:Name="DoubleSuccessOverlay" Visibility="Collapsed" Opacity="0" IsHitTestVisible="False" Grid.RowSpan="3">
-                <Grid.Background>
-                    <SolidColorBrush Color="Black" Opacity="0.9"/>
-                </Grid.Background>
-                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <TextBlock x:Name="TxtDoubleMsg" Text="⭐ AI DUBLAT! ⭐" Foreground="#00FF00" FontSize="90" FontWeight="Black" HorizontalAlignment="Center"/>
-                    <TextBlock Text="SUMA A FOST ACTUALIZATĂ" Foreground="White" FontSize="22" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,10,0,40"/>
-                    <Button x:Name="BtnCloseDouble" Click="BtnCloseDouble_Click" Content="OK, ÎNCHIDE" Background="#FFD700" Foreground="Black" Width="250" Height="50" FontSize="22" FontWeight="Black" Cursor="Hand">
-                        <Button.Resources>
-                            <Style TargetType="Border">
-                                <Setter Property="CornerRadius" Value="10"/>
-                            </Style>
-                        </Button.Resources>
-                    </Button>
-                </StackPanel>
-            </Grid>
         </Grid>
     </Border>
 </Window>
