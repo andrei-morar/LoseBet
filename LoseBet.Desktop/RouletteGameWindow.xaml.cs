@@ -193,8 +193,37 @@ namespace LoseBet.Desktop
             _pariuSelectat = "";
         }
 
-        private void UpdateBalanceDisplay() => TxtBalance.Text = $"Sold: {_balance:0.00} RON";
+        private async void ProceseazaDublajul()
+        {
+            if (_random.Next(0, 2) == 1)
+            {
+                _sumaDeDublat *= 2; TxtDoubleMsg.Text = "⭐ AI DUBLAT! ⭐"; TxtDoubleMsg.Foreground = Brushes.LimeGreen;
+                DoubleSuccessOverlay.Visibility = Visibility.Visible; DoubleSuccessOverlay.IsHitTestVisible = true;
+                DoubleSuccessOverlay.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation { To = 1, Duration = TimeSpan.FromSeconds(0.3) });
+                VictoryOverlay.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation { To = 0, Duration = TimeSpan.FromSeconds(0.3) });
+                await Task.Delay(300); VictoryOverlay.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                _sumaDeDublat = 0; TxtStatus.Text = "Ai pierdut tot la dublaj!"; TxtStatus.Foreground = Brushes.Red;
+                AscundeToateOverlayurile();
+            }
+        }
 
+        private void BtnDoubleRed_Click(object sender, RoutedEventArgs e) => ProceseazaDublajul();
+        private void BtnDoubleBlack_Click(object sender, RoutedEventArgs e) => ProceseazaDublajul();
+        private void BtnCollect_Click(object sender, RoutedEventArgs e) { _balance += _sumaDeDublat; UpdateBalanceDisplay(); AscundeToateOverlayurile(); }
+        private void BtnCloseDouble_Click(object sender, RoutedEventArgs e) { _balance += _sumaDeDublat; UpdateBalanceDisplay(); AscundeToateOverlayurile(); }
+
+        private void AscundeToateOverlayurile()
+        {
+            VictoryOverlay.BeginAnimation(UIElement.OpacityProperty, null); DoubleSuccessOverlay.BeginAnimation(UIElement.OpacityProperty, null);
+            VictoryOverlay.Visibility = Visibility.Collapsed; DoubleSuccessOverlay.Visibility = Visibility.Collapsed;
+            VictoryOverlay.IsHitTestVisible = false; DoubleSuccessOverlay.IsHitTestVisible = false;
+            BtnSpin.IsEnabled = true; _pariuSelectat = "";
+        }
+
+        private void UpdateBalanceDisplay() => TxtBalance.Text = $"Sold: {_balance:0.00} RON";
         private void BtnBack_Click(object sender, RoutedEventArgs e)
         {
             try { RouletteLobbyWindow lobby = new RouletteLobbyWindow(_username, _balance.ToString()); lobby.Show(); this.Close(); }
