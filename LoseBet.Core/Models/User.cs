@@ -2,6 +2,8 @@
 {
     public class User
     {
+        public string Role { get; set; } = "Player"; // Default to Player // Poate fi "Admin", "Player"
+
         public int Id { get; set; }
 
         // Date de Logare
@@ -24,6 +26,6 @@
 
         public string CNP { get; set; } = string.Empty;
         public bool IsAgeVerified { get; set; } = false;
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

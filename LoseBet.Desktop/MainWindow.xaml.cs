@@ -10,7 +10,7 @@ namespace LoseBet.Desktop
     {
         private static readonly HttpClient _httpClient = new HttpClient
         {
-            BaseAddress = new Uri("https://localhost:7139/")
+            BaseAddress = new Uri("https://localhost:7000/")
         };
 
         public MainWindow()
@@ -76,16 +76,16 @@ namespace LoseBet.Desktop
                     // VERIFICĂM CE FEL DE REQUEST A FOST (Login sau Register?)
                     if (endpoint.Contains("login"))
                     {
-                        // 1. E LOGIN: Luăm username-ul din casetă
-                        string username = TxtLoginUsername.Text;
-                        string sold = "0.00"; // Sold fictiv momentan
+                        // Citim răspunsul complet de la API sub formă de obiect
+                        var loginResult = await response.Content.ReadFromJsonAsync<LoginResponse>();
 
-                        // 2. Deschidem Dashboard-ul
-                        DashboardWindow dashboard = new DashboardWindow(username, sold);
-                        dashboard.Show();
-
-                        // 3. Închidem fereastra curentă (Login)
-                        this.Close();
+                        if (loginResult != null)
+                        {
+                            // Trimitem datele REALE către Dashboard
+                            DashboardWindow dashboard = new DashboardWindow(loginResult.Username, loginResult.Balance.ToString("0.00"));
+                            dashboard.Show();
+                            this.Close();
+                        }
                     }
                     else if (endpoint.Contains("register"))
                     {
@@ -118,6 +118,14 @@ namespace LoseBet.Desktop
     }
 
     // --- Modelele de date (DTOs) ---
+
+    public class LoginResponse
+    {
+        public string Message { get; set; }
+        public string Username { get; set; }
+        public decimal Balance { get; set; }
+        public string Role { get; set; }
+    }
 
     public class LoginRequest
     {
