@@ -1,14 +1,17 @@
 using LoseBet.API.Data;
 using Microsoft.EntityFrameworkCore;
 
+
 var builder = WebApplication.CreateBuilder(args);
+
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 // 1. Spunem aplicației să folosească fișierele de tip Controller (adică AuthController-ul tău)
 builder.Services.AddControllers();
 
 // 2. Conectăm Baza de Date
 builder.Services.AddDbContext<LoseBetDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // 3. Pregătim Swagger-ul
 builder.Services.AddEndpointsApiExplorer();
