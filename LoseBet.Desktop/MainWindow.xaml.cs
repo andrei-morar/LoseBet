@@ -81,6 +81,8 @@ namespace LoseBet.Desktop
 
                         if (loginResult != null)
                         {
+                            // Setăm rolul utilizatorului în sesiunea globală
+                            UserSession.Role = loginResult.Role;
                             // Trimitem datele REALE către Dashboard
                             DashboardWindow dashboard = new DashboardWindow(loginResult.Username, loginResult.Balance.ToString("0.00"));
                             dashboard.Show();

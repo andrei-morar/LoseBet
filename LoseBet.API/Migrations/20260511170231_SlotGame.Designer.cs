@@ -3,6 +3,7 @@ using System;
 using LoseBet.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LoseBet.API.Migrations
 {
     [DbContext(typeof(LoseBetDbContext))]
-    partial class LoseBetDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260511170231_SlotGame")]
+    partial class SlotGame
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -202,44 +205,6 @@ namespace LoseBet.API.Migrations
                     b.ToTable("SlotGames");
                 });
 
-            modelBuilder.Entity("LoseBet.Core.Models.SlotSymbol", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ImageName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsWild")
-                        .HasColumnType("boolean");
-
-                    b.Property<decimal>("Multiplier3")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("Multiplier4")
-                        .HasColumnType("numeric");
-
-                    b.Property<decimal>("Multiplier5")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("SlotGameId")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SlotGameId");
-
-                    b.ToTable("SlotSymbols");
-                });
-
             modelBuilder.Entity("LoseBet.Core.Models.Transaction", b =>
                 {
                     b.Property<int>("Id")
@@ -334,20 +299,6 @@ namespace LoseBet.API.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("LoseBet.Core.Models.SlotSymbol", b =>
-                {
-                    b.HasOne("LoseBet.Core.Models.SlotGame", null)
-                        .WithMany("Symbols")
-                        .HasForeignKey("SlotGameId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("LoseBet.Core.Models.SlotGame", b =>
-                {
-                    b.Navigation("Symbols");
                 });
 #pragma warning restore 612, 618
         }

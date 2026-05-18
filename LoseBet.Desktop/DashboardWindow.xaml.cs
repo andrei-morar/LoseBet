@@ -4,14 +4,31 @@ namespace LoseBet.Desktop
 {
     public partial class DashboardWindow : Window
     {
+        // 1. AM ADĂUGAT VARIABILA AICI:
+        private string _username;
+
         // Constructorul care primește username și sold
         public DashboardWindow(string username, string balance)
         {
             InitializeComponent();
 
+            // 2. AM SALVAT USERNAME-UL CA SĂ-L ȘTIE TOATĂ CLASA:
+            _username = username;
+
             // Setăm textele pe ecran
             TxtWelcome.Text = $"Salut, {username}!";
             TxtBalance.Text = $"Sold: {balance} RON";
+
+            // 3. AICI ESTE MAGIA PENTRU BUTONUL DE ADMIN:
+            // Verificăm dacă rolul din sesiune este "admin" (indiferent cum e scris în baza de date)
+            if (UserSession.Role != null && UserSession.Role.Trim().ToLower() == "admin")
+            {
+                BtnAdminPanel.Visibility = Visibility.Visible; // Ești șef, primești butonul!
+            }
+            else
+            {
+                BtnAdminPanel.Visibility = Visibility.Collapsed; // Ești jucător, butonul e ascuns!
+            }
         }
 
         private void BtnLogout_Click(object sender, RoutedEventArgs e)
@@ -26,12 +43,11 @@ namespace LoseBet.Desktop
 
         private void BtnSlots_Click(object sender, RoutedEventArgs e)
         {
-            // Luăm datele de pe ecran ca să le pasăm mai departe
+            // Acum poți folosi direct _username în loc să-l mai decupezi cu Replace!
             string rawBalance = TxtBalance.Text.Replace("Sold: ", "").Replace(" RON", "");
-            string username = TxtWelcome.Text.Replace("Salut, ", "").Replace("!", "");
 
             // Deschidem Lobby-ul de Păcănele
-            SlotsLobbyWindow lobby = new SlotsLobbyWindow(username, rawBalance);
+            SlotsLobbyWindow lobby = new SlotsLobbyWindow(_username, rawBalance);
             lobby.Show();
             this.Close();
         }
@@ -40,32 +56,30 @@ namespace LoseBet.Desktop
         {
             // Deschidem Casieria (Portofelul)
             string rawBalance = TxtBalance.Text.Replace("Sold: ", "").Replace(" RON", "");
-            string username = TxtWelcome.Text.Replace("Salut, ", "").Replace("!", "");
 
-            WalletWindow wallet = new WalletWindow(username, rawBalance);
+            WalletWindow wallet = new WalletWindow(_username, rawBalance);
             wallet.Show();
             this.Close();
         }
+
         private void BtnRoulette_Click(object sender, RoutedEventArgs e)
         {
             string rawBalance = TxtBalance.Text.Replace("Sold: ", "").Replace(" RON", "");
-            string username = TxtWelcome.Text.Replace("Salut, ", "").Replace("!", "");
 
-            RouletteLobbyWindow rouletteLobby = new RouletteLobbyWindow(username, rawBalance);
+            RouletteLobbyWindow rouletteLobby = new RouletteLobbyWindow(_username, rawBalance);
             rouletteLobby.Show();
             this.Close();
         }
+
         private void BtnBlackjack_Click(object sender, RoutedEventArgs e)
         {
-            // Luăm datele de pe ecran ca să le pasăm mai departe
             string rawBalance = TxtBalance.Text.Replace("Sold: ", "").Replace(" RON", "");
-            string username = TxtWelcome.Text.Replace("Salut, ", "").Replace("!", "");
 
-            // AICI ERA PROBLEMA! Trebuie cu J mare ca să găsească fișierul corect
-            BlackJackLobbyWindow blackjackLobby = new BlackJackLobbyWindow(username, rawBalance);
+            BlackJackLobbyWindow blackjackLobby = new BlackJackLobbyWindow(_username, rawBalance);
             blackjackLobby.Show();
             this.Close();
         }
+
         // ==========================================
         // BUTOANELE NOI (NEIMPLEMENTATE MOMENTAN)
         // ==========================================
@@ -73,6 +87,13 @@ namespace LoseBet.Desktop
         private void BtnSports_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show("Modulul 'Pariuri Sportive' nu a fost încă implementat. În curând!", "În dezvoltare", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+
+        private void BtnAdminPanel_Click(object sender, RoutedEventArgs e)
+        {
+            // Acum funcționează perfect, deoarece _username este recunoscut!
+            AdminWindow adminWindow = new AdminWindow(_username);
+            adminWindow.Show();
         }
     }
 }
