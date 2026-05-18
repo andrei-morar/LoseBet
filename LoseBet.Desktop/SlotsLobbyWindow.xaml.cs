@@ -1,4 +1,11 @@
-﻿using System.Windows;
+﻿using LoseBet.Core.Models; // Importăm modelul SlotGame
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
 
 namespace LoseBet.Desktop
 {
@@ -6,47 +13,59 @@ namespace LoseBet.Desktop
     {
         private string _username;
         private string _balance;
+        private static readonly HttpClient _httpClient = new HttpClient { BaseAddress = new Uri("https://localhost:7000/") };
 
         public SlotsLobbyWindow(string username, string balance)
         {
             InitializeComponent();
             _username = username;
             _balance = balance;
+            TxtBalance.Text = $"Sold: {balance} RON";
 
-            // Afișăm soldul primit din pagina anterioară
-            TxtBalance.Text = $"Sold: {_balance} RON";
+            _ = LoadGamesAsync();
         }
 
-        private void BtnPlayFruit_Click(object sender, RoutedEventArgs e)
+        private async Task LoadGamesAsync()
         {
-            // Asta te duce în jocul 3x5 pe care l-am construit deja
-            string rawBalance = TxtBalance.Text.Replace("Sold: ", "").Replace(" RON", "");
-            SlotsWindow gameWindow = new SlotsWindow(_username, rawBalance);
-            gameWindow.Show();
-            this.Close();
+            try
+            {
+                // Chemăm API-ul să ne dea jocurile active
+                var games = await _httpClient.GetFromJsonAsync<List<SlotGame>>("api/slots/active");
+                if (games != null)
+                {
+                    ItemsGames.ItemsSource = games;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Eroare la încărcarea jocurilor: " + ex.Message);
+            }
         }
 
-        // --- BUTOANELE NOI ---
-
-        private void BtnPlaySizzling_Click(object sender, RoutedEventArgs e)
+        private void BtnPlayGame_Click(object sender, RoutedEventArgs e)
         {
-            string rawBalance = TxtBalance.Text.Replace("Sold: ", "").Replace(" RON", "");
-            SizzlingHotWindow sizzling = new SizzlingHotWindow(_username, rawBalance);
-            sizzling.Show();
-            this.Close();
-        }
+            var button = sender as Button;
+            var selectedGame = button?.Tag as SlotGame;
 
-        private void BtnPlayBurning_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Burning Hot se încarcă în agenție... În curând!", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+            if (selectedGame != null)
+            {
+                // Deschidem motorul de joc și îi dăm tot ce are nevoie
+                SlotEngineWindow engine = new SlotEngineWindow(_username, _balance, selectedGame);
+                engine.Show();
+                this.Close();
+            }
         }
 
         private void BtnBack_Click(object sender, RoutedEventArgs e)
         {
-            // Ne întoarcem la Dashboard
             DashboardWindow dashboard = new DashboardWindow(_username, _balance);
             dashboard.Show();
             this.Close();
+        }
+
+        private void BtnRefresh_Click(object sender, RoutedEventArgs e)
+        {
+            _ = LoadGamesAsync();
         }
     }
 }
