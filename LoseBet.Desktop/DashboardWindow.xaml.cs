@@ -79,7 +79,15 @@ namespace LoseBet.Desktop
             blackjackLobby.Show();
             this.Close();
         }
+        private void BtnTriviador_Click(object sender, RoutedEventArgs e)
+        {
+            string rawBalance = TxtBalance.Text.Replace("Sold: ", "").Replace(" RON", "");
+            string username = TxtWelcome.Text.Replace("Salut, ", "").Replace("!", "");
 
+            TriviadorLobbyWindow triviadorLobby = new TriviadorLobbyWindow(username, rawBalance);
+            triviadorLobby.Show();
+            this.Close();
+        }
         // ==========================================
         // BUTOANELE NOI (NEIMPLEMENTATE MOMENTAN)
         // ==========================================

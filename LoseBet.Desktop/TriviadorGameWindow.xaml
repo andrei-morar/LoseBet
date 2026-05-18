@@ -1,0 +1,68 @@
+﻿<Window x:Class="LoseBet.Desktop.TriviadorGameWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="LoseBet - Triviador Arena" Height="700" Width="1100" WindowStartupLocation="CenterScreen" Background="#2C3E50">
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0,0,0,10">
+            <Button Content="🏳️ Abandon / Înapoi" Click="BtnBack_Click" Width="140" Height="30" HorizontalAlignment="Left" Background="#E74C3C" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand"/>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <TextBlock x:Name="TxtPlayerScore" Text="TU: 0 pct | Teritorii: 0" Foreground="#3498DB" FontSize="18" FontWeight="Bold" Margin="0,0,20,0"/>
+                <TextBlock x:Name="TxtBotsScore" Text="BOȚI: 0 pct | Teritorii: 0" Foreground="#E74C3C" FontSize="18" FontWeight="Bold"/>
+            </StackPanel>
+
+            <TextBlock x:Name="TxtMiza" Text="Miză: 100 RON" Foreground="Gold" FontSize="18" FontWeight="Bold" HorizontalAlignment="Right"/>
+        </Grid>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="6*"/>
+                <ColumnDefinition Width="4*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Background="#34495E" CornerRadius="10" Padding="10" Margin="0,0,10,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <TextBlock x:Name="TxtMapStatus" Text="FAZA 1: Alege-ți CAPITALA!" Foreground="Gold" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+
+                    <Viewbox Grid.Row="1" Stretch="Uniform" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <Canvas x:Name="MapCanvas" Width="650" Height="450" Background="#2C3E50">
+                        </Canvas>
+                    </Viewbox>
+                </Grid>
+            </Border>
+
+            <Border Grid.Column="1" Background="#ECF0F1" CornerRadius="10" Padding="15">
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock x:Name="TxtTimer" Text="⏳ 30" Foreground="#E74C3C" FontSize="40" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+
+                    <TextBlock x:Name="TxtQuestion" Text="Așteaptă începerea luptei..." Foreground="#2C3E50" FontSize="20" FontWeight="Bold" TextWrapping="Wrap" TextAlignment="Center" Margin="0,0,0,20"/>
+
+                    <UniformGrid x:Name="PanelMultipleChoice" Columns="2" Rows="2" Visibility="Collapsed" Height="150">
+                        <Button x:Name="BtnA" Content="A. Varianta 1" Click="BtnAnswer_Click" Margin="5" Background="#3498DB" Foreground="White" FontSize="16" FontWeight="Bold" Cursor="Hand"/>
+                        <Button x:Name="BtnB" Content="B. Varianta 2" Click="BtnAnswer_Click" Margin="5" Background="#3498DB" Foreground="White" FontSize="16" FontWeight="Bold" Cursor="Hand"/>
+                        <Button x:Name="BtnC" Content="C. Varianta 3" Click="BtnAnswer_Click" Margin="5" Background="#3498DB" Foreground="White" FontSize="16" FontWeight="Bold" Cursor="Hand"/>
+                        <Button x:Name="BtnD" Content="D. Varianta 4" Click="BtnAnswer_Click" Margin="5" Background="#3498DB" Foreground="White" FontSize="16" FontWeight="Bold" Cursor="Hand"/>
+                    </UniformGrid>
+
+                    <StackPanel x:Name="PanelApproximation" Visibility="Collapsed" HorizontalAlignment="Center">
+                        <TextBlock Text="Introdu răspunsul tău exact:" FontSize="16" FontWeight="Bold" Foreground="#34495E" Margin="0,0,0,10"/>
+                        <TextBox x:Name="TxtAnswerInput" Width="200" Height="40" FontSize="20" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,0,0,10"/>
+                        <Button Content="TRIMITE RĂSPUNS" Click="BtnSubmitApproximation_Click" Width="200" Height="40" Background="#2ECC71" Foreground="White" FontSize="16" FontWeight="Bold" Cursor="Hand"/>
+                    </StackPanel>
+
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</Window>
