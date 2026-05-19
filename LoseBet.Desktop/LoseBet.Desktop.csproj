@@ -9,22 +9,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Assets\7.png" />
-    <None Remove="Assets\cherry.png" />
-    <None Remove="Assets\lemon.png" />
-    <None Remove="Assets\orange.png" />
-    <None Remove="Assets\star.png" />
-    <None Remove="Assets\watermelon.png" />
+    <None Remove="Resources\ShiningCrown_10Lines.png" />
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Assets\7.png" />
-    <Resource Include="Assets\cherry.png" />
-    <Resource Include="Assets\grapes.png" />
-    <Resource Include="Assets\lemon.png" />
-    <Resource Include="Assets\orange.png" />
-    <Resource Include="Assets\star.png" />
-    <Resource Include="Assets\watermelon.png" />
+    <ProjectReference Include="..\LoseBet.Core\LoseBet.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\ShiningCrown_10Lines.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
 </Project>

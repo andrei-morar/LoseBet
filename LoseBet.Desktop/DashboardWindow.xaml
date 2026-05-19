@@ -27,6 +27,8 @@
                 <Button Content="🎡 Ruletă" Click="BtnRoulette_Click" Width="150" Height="100" Margin="10" Background="LightGray" FontSize="14" FontWeight="Bold" Cursor="Hand"/>
                 <Button Content="🃏 Blackjack" Click="BtnBlackjack_Click" Width="150" Height="100" Margin="10" Background="LightGray" FontSize="14" FontWeight="Bold" Cursor="Hand"/>
                 <Button Content="⚽ Pariuri Sportive" Click="BtnSports_Click" Width="150" Height="100" Margin="10" Background="LightGray" FontSize="14" FontWeight="Bold" Cursor="Hand"/>
+                <Button Content="🧠 Triviador" Click="BtnTriviador_Click" Width="150" Height="100" Margin="10" Background="LightGray" FontSize="14" FontWeight="Bold" Cursor="Hand"/>
+                <Button x:Name="BtnAdminPanel" Content="⚙️ Admin Panel" Width="120" Height="40" Visibility="Collapsed" Click="BtnAdminPanel_Click" Background="DarkRed" Foreground="White" Margin="5"/>
             </WrapPanel>
         </StackPanel>
 
