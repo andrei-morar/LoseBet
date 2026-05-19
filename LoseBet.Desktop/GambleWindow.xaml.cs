@@ -1,4 +1,8 @@
-﻿using System;
+﻿using LoseBet.Core.Models;
+using System;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 
@@ -6,59 +10,74 @@ namespace LoseBet.Desktop
 {
     public partial class GambleWindow : Window
     {
-        public decimal ResultAmount { get; private set; }
+        private static readonly HttpClient _httpClient = new HttpClient { BaseAddress = new Uri("https://localhost:7000/") };
         private decimal _currentAmount;
-        private Random _random = new Random();
 
         public GambleWindow(decimal amount)
         {
             InitializeComponent();
             _currentAmount = amount;
-            TxtGambleAmount.Text = _currentAmount.ToString("0.00");
-            ResultAmount = 0; // Dacă închide fereastra fără să încaseze, pierde tot (opțional)
+            TxtGambleAmount.Text = $"{_currentAmount:F2} RON";
         }
 
-        private void BtnRed_Click(object sender, RoutedEventArgs e) => Play(true);
-        private void BtnBlack_Click(object sender, RoutedEventArgs e) => Play(false);
+        private async void BtnRed_Click(object sender, RoutedEventArgs e) => await ProcessGamble("Red");
+        private async void BtnBlack_Click(object sender, RoutedEventArgs e) => await ProcessGamble("Black");
 
-        private void Play(bool choseRed)
+        private async Task ProcessGamble(string guess)
         {
-            // 50-50 șanse
-            bool isRed = _random.Next(0, 2) == 0;
+            BtnRed.IsEnabled = BtnBlack.IsEnabled = BtnCollect.IsEnabled = false;
 
-            // Vizual: arătăm cartea
-            CardBorder.Background = isRed ? Brushes.Red : Brushes.Black;
-            TxtCardSymbol.Text = isRed ? "♥" : "♣";
-            TxtCardSymbol.Foreground = Brushes.White;
-
-            if (choseRed == isRed)
+            try
             {
-                // A câștigat: Dublăm!
-                _currentAmount *= 2;
-                TxtGambleAmount.Text = _currentAmount.ToString("0.00");
+                var payload = new { UserId = UserSession.UserId, Amount = _currentAmount, Guess = guess };
+                var resp = await _httpClient.PostAsJsonAsync("api/slots/gamble", payload);
 
-                if (_currentAmount >= 5000) // Limită de siguranță
+                if (resp.IsSuccessStatusCode)
                 {
-                    MessageBox.Show("Limită de dublaj atinsă!");
-                    BtnCollect_Click(null, null);
+                    var res = await resp.Content.ReadFromJsonAsync<GambleResponseDTO>();
+
+                    // Afișăm cartea
+                    TxtCardValue.Text = res.CardColor == "Red" ? "♥" : "♠";
+                    TxtCardValue.Foreground = res.CardColor == "Red" ? Brushes.Red : Brushes.Black;
+
+                    if (res.IsWin)
+                    {
+                        _currentAmount = res.WinAmount;
+                        TxtGambleAmount.Text = $"{_currentAmount:F2} RON";
+                        TxtResult.Text = "AI GHICIT! Poți dubla din nou sau colecta.";
+                        TxtResult.Foreground = Brushes.Lime;
+
+                        BtnRed.IsEnabled = BtnBlack.IsEnabled = BtnCollect.IsEnabled = true;
+                    }
+                    else
+                    {
+                        TxtResult.Text = "AI PIERDUT!";
+                        TxtResult.Foreground = Brushes.Red;
+
+                        // Așteptăm 1.5 secunde să vadă cartea, apoi închidem
+                        await Task.Delay(1500);
+                        this.DialogResult = false;
+                        this.Close();
+                    }
+
+                    GameService.NotifyBalanceChanged(); // Anunțăm că s-au mișcat banii
                 }
             }
-            else
-            {
-                // A pierdut tot
-                MessageBox.Show("Ai pierdut!");
-                _currentAmount = 0;
-                ResultAmount = 0;
-                this.DialogResult = true;
-                this.Close();
-            }
+            catch { MessageBox.Show("Eroare de conexiune!"); BtnRed.IsEnabled = BtnBlack.IsEnabled = BtnCollect.IsEnabled = true; }
         }
 
         private void BtnCollect_Click(object sender, RoutedEventArgs e)
         {
-            ResultAmount = _currentAmount;
             this.DialogResult = true;
             this.Close();
         }
+    }
+
+    public class GambleResponseDTO
+    {
+        public bool IsWin { get; set; }
+        public string CardColor { get; set; }
+        public decimal NewBalance { get; set; }
+        public decimal WinAmount { get; set; }
     }
 }

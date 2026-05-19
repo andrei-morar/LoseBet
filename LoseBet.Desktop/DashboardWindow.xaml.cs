@@ -1,63 +1,71 @@
-﻿using System.Windows;
+﻿using System.ComponentModel;
+using System.Windows;
 
 namespace LoseBet.Desktop
 {
     public partial class DashboardWindow : Window
     {
-        // 1. AM ADĂUGAT VARIABILA AICI:
-        private string _username;
+        // MAGIC TRICK: Facem variabila statică. Astfel, ține minte numele tău 
+        // chiar dacă se închide și se redeschide fereastra de 100 de ori!
+        private static string _savedUsername = "";
 
-        // Constructorul care primește username și sold
         public DashboardWindow(string username, string balance)
         {
             InitializeComponent();
 
-            // 2. AM SALVAT USERNAME-UL CA SĂ-L ȘTIE TOATĂ CLASA:
-            _username = username;
+            // Dacă primește un nume real, îl salvăm. Dacă primește "", îl folosește pe cel salvat anterior.
+            if (!string.IsNullOrEmpty(username))
+            {
+                _savedUsername = username;
+            }
 
-            // Setăm textele pe ecran
-            TxtWelcome.Text = $"Salut, {username}!";
-            TxtBalance.Text = $"Sold: {balance} RON";
+            TxtWelcome.Text = $"Salut, {_savedUsername}!";
 
-            // 3. AICI ESTE MAGIA PENTRU BUTONUL DE ADMIN:
-            // Verificăm dacă rolul din sesiune este "admin" (indiferent cum e scris în baza de date)
+            // AICI AM REZOLVAT BUG-UL: Ignorăm parametrul 'balance' și aducem banii reali instant!
+            RefreshDashboardBalance();
+
+            // Verificăm rolul
             if (UserSession.Role != null && UserSession.Role.Trim().ToLower() == "admin")
             {
-                BtnAdminPanel.Visibility = Visibility.Visible; // Ești șef, primești butonul!
+                BtnAdminPanel.Visibility = Visibility.Visible;
             }
             else
             {
-                BtnAdminPanel.Visibility = Visibility.Collapsed; // Ești jucător, butonul e ascuns!
+                BtnAdminPanel.Visibility = Visibility.Collapsed;
             }
+
+            // Ne asigurăm că ascultă corect megafonul când se schimbă banii din alte jocuri
+            GameService.BalanceUpdated -= RefreshDashboardBalance;
+            GameService.BalanceUpdated += RefreshDashboardBalance;
+        }
+
+        private async void RefreshDashboardBalance()
+        {
+            // Aducem din nou balanța direct de la server
+            decimal freshBalance = await GameService.GetBalanceAsync();
+
+            // Adăugăm înapoi textul "Sold: " ca să arate frumos și să nu strice alte butoane
+            TxtBalance.Text = $"Sold: {freshBalance:F2} RON";
         }
 
         private void BtnLogout_Click(object sender, RoutedEventArgs e)
         {
-            // Când dă logout, redeschidem fereastra de Login
             MainWindow loginWindow = new MainWindow();
             loginWindow.Show();
-
-            // Închidem Dashboard-ul actual
             this.Close();
         }
 
         private void BtnSlots_Click(object sender, RoutedEventArgs e)
         {
-            // Acum poți folosi direct _username în loc să-l mai decupezi cu Replace!
-            string rawBalance = TxtBalance.Text.Replace("Sold: ", "").Replace(" RON", "");
-
-            // Deschidem Lobby-ul de Păcănele
-            SlotsLobbyWindow lobby = new SlotsLobbyWindow(_username, rawBalance);
-            lobby.Show();
+            SlotsLobbyWindow slotsLobby = new SlotsLobbyWindow();
+            slotsLobby.Show();
             this.Close();
         }
 
         private void BtnWallet_Click(object sender, RoutedEventArgs e)
         {
-            // Deschidem Casieria (Portofelul)
             string rawBalance = TxtBalance.Text.Replace("Sold: ", "").Replace(" RON", "");
-
-            WalletWindow wallet = new WalletWindow(_username, rawBalance);
+            WalletWindow wallet = new WalletWindow(_savedUsername, rawBalance);
             wallet.Show();
             this.Close();
         }
@@ -65,8 +73,7 @@ namespace LoseBet.Desktop
         private void BtnRoulette_Click(object sender, RoutedEventArgs e)
         {
             string rawBalance = TxtBalance.Text.Replace("Sold: ", "").Replace(" RON", "");
-
-            RouletteLobbyWindow rouletteLobby = new RouletteLobbyWindow(_username, rawBalance);
+            RouletteLobbyWindow rouletteLobby = new RouletteLobbyWindow(_savedUsername, rawBalance);
             rouletteLobby.Show();
             this.Close();
         }
@@ -74,33 +81,51 @@ namespace LoseBet.Desktop
         private void BtnBlackjack_Click(object sender, RoutedEventArgs e)
         {
             string rawBalance = TxtBalance.Text.Replace("Sold: ", "").Replace(" RON", "");
-
-            BlackJackLobbyWindow blackjackLobby = new BlackJackLobbyWindow(_username, rawBalance);
+            BlackJackLobbyWindow blackjackLobby = new BlackJackLobbyWindow(_savedUsername, rawBalance);
             blackjackLobby.Show();
             this.Close();
         }
+
         private void BtnTriviador_Click(object sender, RoutedEventArgs e)
         {
             string rawBalance = TxtBalance.Text.Replace("Sold: ", "").Replace(" RON", "");
-            string username = TxtWelcome.Text.Replace("Salut, ", "").Replace("!", "");
-
-            TriviadorLobbyWindow triviadorLobby = new TriviadorLobbyWindow(username, rawBalance);
+            TriviadorLobbyWindow triviadorLobby = new TriviadorLobbyWindow(_savedUsername, rawBalance);
             triviadorLobby.Show();
             this.Close();
         }
-        // ==========================================
-        // BUTOANELE NOI (NEIMPLEMENTATE MOMENTAN)
-        // ==========================================
+
+        // ============================
+        // BUTONUL NOU: ALBA-NEAGRA
+        // ============================
+        private void BtnAlbaNeagra_Click(object sender, RoutedEventArgs e)
+        {
+            AlbaNeagraWindow albaNeagra = new AlbaNeagraWindow();
+            albaNeagra.Show();
+            this.Close();
+        }
+
+        private void BtnMines_Click(object sender, RoutedEventArgs e)
+        {
+            MinesWindow minesGame = new MinesWindow();
+            minesGame.Show();
+        }
+
+        private void BtnAviator_Click(object sender, RoutedEventArgs e)
+        {
+            AviatorWindow aviatorGame = new AviatorWindow();
+            aviatorGame.Show();
+        }
 
         private void BtnSports_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Modulul 'Pariuri Sportive' nu a fost încă implementat. În curând!", "În dezvoltare", MessageBoxButton.OK, MessageBoxImage.Information);
+            SportsBettingWindow sportsWindow = new SportsBettingWindow();
+            sportsWindow.Show();
+            this.Close();
         }
 
         private void BtnAdminPanel_Click(object sender, RoutedEventArgs e)
         {
-            // Acum funcționează perfect, deoarece _username este recunoscut!
-            AdminWindow adminWindow = new AdminWindow(_username);
+            AdminWindow adminWindow = new AdminWindow(_savedUsername);
             adminWindow.Show();
         }
     }

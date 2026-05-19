@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -79,10 +80,13 @@ namespace LoseBet.Desktop
                         // Citim răspunsul complet de la API sub formă de obiect
                         var loginResult = await response.Content.ReadFromJsonAsync<LoginResponse>();
 
+                        // AICI PUI CODUL:
                         if (loginResult != null)
                         {
-                            // Setăm rolul utilizatorului în sesiunea globală
+                            // Setăm rolul și ID-ul utilizatorului în sesiunea globală
+                            UserSession.UserId = loginResult.UserId; // <--- Linia nouă adăugată
                             UserSession.Role = loginResult.Role;
+
                             // Trimitem datele REALE către Dashboard
                             DashboardWindow dashboard = new DashboardWindow(loginResult.Username, loginResult.Balance.ToString("0.00"));
                             dashboard.Show();
@@ -123,6 +127,8 @@ namespace LoseBet.Desktop
 
     public class LoginResponse
     {
+        [JsonPropertyName("Id")]
+        public int UserId { get; set; }
         public string Message { get; set; }
         public string Username { get; set; }
         public decimal Balance { get; set; }
