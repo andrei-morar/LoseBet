@@ -1,7 +1,7 @@
 ﻿<Window x:Class="LoseBet.Desktop.AdminWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Admin Panel - LoseBet" Height="600" Width="900" WindowStartupLocation="CenterScreen">
+        Title="Admin Panel - LoseBet" Height="685" Width="900" WindowStartupLocation="CenterScreen">
     <Grid>
         <TabControl Margin="10">
             <TabItem Header="👥 Jucători">
@@ -51,8 +51,30 @@
                             <TextBox x:Name="TxtSlotThumb" Height="25" IsReadOnly="True" Background="#F0F0F0" Text="Selectează o poză..."/>
                         </DockPanel>
 
-                        <TextBlock Text="Simboluri Joc (minim 5 poze):" Margin="0,10,0,0"/>
-                        <Button x:Name="BtnUploadSymbols" Content="📁 Încarcă Simboluri (Multi)" Height="30" Click="BtnUploadSymbols_Click" Background="#444" Foreground="White" Margin="0,0,0,10"/>
+                        <TextBlock Text="Simboluri Joc (minim 3):" Margin="0,10,0,0" FontWeight="Bold"/>
+                        <Button x:Name="BtnUploadSymbols" Content="➕ Adaugă Simbol Nou" Height="30" Click="BtnUploadSymbols_Click" Background="#444" Foreground="White" Margin="0,5,0,5"/>
+
+                        <ListBox x:Name="LstConfiguredSymbols" Height="120" Margin="0,0,0,10" Background="#F9F9F9">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <DockPanel Width="260">
+                                        <Button Content="✕" DockPanel.Dock="Right" Foreground="Red" Background="Transparent" BorderThickness="0" FontWeight="Bold" Click="BtnRemoveSymbolFromList_Click" Tag="{Binding}" Margin="5,0,0,0"/>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding ImageName}" FontWeight="Bold" FontSize="11"/>
+
+                                            <TextBlock FontSize="10" Foreground="DimGray">
+                        <Run Text="3x: "/>
+                        <Run Text="{Binding Multiplier3}"/>
+                        <Run Text=" | 4x: "/>
+                        <Run Text="{Binding Multiplier4}"/>
+                        <Run Text=" | 5x: "/>
+                        <Run Text="{Binding Multiplier5}"/>
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </DockPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
 
                         <TextBlock Text="Culoare Temă (Hex: #RRGGBB):"/>
                         <TextBox x:Name="TxtSlotColor" Text="#1E1E1E" Margin="0,0,0,10" Height="25"/>
@@ -104,6 +126,149 @@
                             </StackPanel>
                         </Grid>
                     </Border>
+                </Grid>
+            </TabItem>
+            <TabItem Header="⚽ Pariuri Sportive">
+                <Grid Margin="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="250"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Margin="0,0,20,0">
+                        <TextBlock Text="Adaugă Meci Nou" FontSize="18" FontWeight="Bold" Margin="0,0,0,15"/>
+
+                        <TextBlock Text="Echipa Gazdă (Home):"/>
+                        <TextBox x:Name="TxtHomeTeam" Margin="0,0,0,10" Height="25"/>
+
+                        <TextBlock Text="Echipa Oaspete (Away):"/>
+                        <TextBox x:Name="TxtAwayTeam" Margin="0,0,0,10" Height="25"/>
+
+                        <TextBlock Text="Cote (1, X, 2):" Margin="0,10,0,5" FontWeight="Bold"/>
+                        <UniformGrid Columns="3" Margin="0,0,0,15">
+                            <StackPanel Margin="0,0,5,0">
+                                <TextBlock Text="1 (Gazde)" FontSize="11" HorizontalAlignment="Center"/>
+                                <TextBox x:Name="TxtOdds1" Text="1.00" Height="25" TextAlignment="Center"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,0,5,0">
+                                <TextBlock Text="X (Egal)" FontSize="11" HorizontalAlignment="Center"/>
+                                <TextBox x:Name="TxtOddsX" Text="1.00" Height="25" TextAlignment="Center"/>
+                            </StackPanel>
+                            <StackPanel>
+                                <TextBlock Text="2 (Oaspeți)" FontSize="11" HorizontalAlignment="Center"/>
+                                <TextBox x:Name="TxtOdds2" Text="1.00" Height="25" TextAlignment="Center"/>
+                            </StackPanel>
+                        </UniformGrid>
+
+                        <Button Content="✅ Adaugă Meci în Ofertă" Height="40" Background="DarkBlue" Foreground="White" FontWeight="Bold" Click="BtnAddMatch_Click"/>
+                    </StackPanel>
+
+                    <Border Grid.Column="1" Background="#F0F0F0" CornerRadius="5" Padding="20">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <TextBlock Text="Meciuri Active (În Așteptare)" FontWeight="Bold" FontSize="16" Margin="0,0,0,10"/>
+
+                            <DataGrid x:Name="MatchesGrid" Grid.Row="1" IsReadOnly="True" AutoGenerateColumns="False" SelectionMode="Single">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="30"/>
+                                    <DataGridTextColumn Header="Gazde" Binding="{Binding HomeTeam}" Width="*"/>
+                                    <DataGridTextColumn Header="Oaspeți" Binding="{Binding AwayTeam}" Width="*"/>
+                                    <DataGridTextColumn Header="Cota 1" Binding="{Binding Odds1}" Width="50"/>
+                                    <DataGridTextColumn Header="Cota X" Binding="{Binding OddsX}" Width="50"/>
+                                    <DataGridTextColumn Header="Cota 2" Binding="{Binding Odds2}" Width="50"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+
+                            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+                                <Button Content="🔄 Refresh Ofertă" Click="BtnRefreshMatches_Click" Background="LightGray" Width="120" Height="30" Margin="0,0,10,0"/>
+                                <Button Content="🎲 SIMULEAZĂ MECIUL" Click="BtnSimulateMatch_Click" Background="DarkRed" Foreground="White" FontWeight="Bold" Width="150" Height="30" ToolTip="Generează scorul și plătește biletele!"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </TabItem>
+            <TabItem Header="🧠 Trivia">
+                <Grid Margin="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+                        <Border Width="350" Background="#222" Padding="20" Margin="0,0,10,0">
+                            <StackPanel>
+                                <TextBlock Text="Adaugă Întrebare Nouă" FontSize="20" FontWeight="Bold" Margin="0,0,0,15" Foreground="White"/>
+
+                                <TextBlock Text="Categorie:" Foreground="Gray"/>
+                                <ComboBox x:Name="CmbTriviaCategory" Margin="0,0,0,10" Height="25" FontSize="14">
+                                    <ComboBoxItem Content="Istorie"/>
+                                    <ComboBoxItem Content="Geografie"/>
+                                    <ComboBoxItem Content="Sport"/>
+                                    <ComboBoxItem Content="Artă"/>
+                                    <ComboBoxItem Content="Știință"/>
+                                    <ComboBoxItem Content="Diverse"/>
+                                </ComboBox>
+
+                                <TextBlock Text="Tip Întrebare:" Foreground="Gray"/>
+                                <ComboBox x:Name="CmbTriviaType" Margin="0,0,0,10" Height="25" SelectionChanged="CmbTriviaType_SelectionChanged" FontSize="14">
+                                    <ComboBoxItem Content="Grilă (4 Variante)" Tag="2" IsSelected="True"/>
+                                    <ComboBoxItem Content="Aproximare (Răspuns Exact)" Tag="1"/>
+                                </ComboBox>
+
+                                <TextBlock Text="Text Întrebare:" Foreground="Gray"/>
+                                <TextBox x:Name="TxtTriviaText" Margin="0,0,0,10" Height="60" TextWrapping="Wrap" FontSize="14"/>
+
+                                <StackPanel x:Name="PanelTriviaOptions">
+                                    <TextBlock Text="Varianta A:" Foreground="Gray"/>
+                                    <TextBox x:Name="TxtTriviaA" Margin="0,0,0,5" Height="25" FontSize="14"/>
+                                    <TextBlock Text="Varianta B:" Foreground="Gray"/>
+                                    <TextBox x:Name="TxtTriviaB" Margin="0,0,0,5" Height="25" FontSize="14"/>
+                                    <TextBlock Text="Varianta C:" Foreground="Gray"/>
+                                    <TextBox x:Name="TxtTriviaC" Margin="0,0,0,5" Height="25" FontSize="14"/>
+                                    <TextBlock Text="Varianta D:" Foreground="Gray"/>
+                                    <TextBox x:Name="TxtTriviaD" Margin="0,0,0,15" Height="25" FontSize="14"/>
+                                </StackPanel>
+
+                                <TextBlock Text="Răspuns Corect:" Foreground="Gold" FontWeight="Bold"/>
+                                <TextBox x:Name="TxtTriviaCorrect" Margin="0,0,0,20" Height="25" FontSize="14" FontWeight="Bold"/>
+
+                                <Button Content="➕ SALVEAZĂ ÎNTREBAREA" Click="BtnAddTrivia_Click" Height="45" Background="#28a745" Foreground="White" FontSize="16" FontWeight="Bold" Cursor="Hand" BorderThickness="0"/>
+                            </StackPanel>
+                        </Border>
+                    </ScrollViewer>
+
+                    <Grid Grid.Column="1" Background="#F0F0F0" Margin="10,0,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Text="Întrebări existente în Baza de Date:" FontWeight="Bold" FontSize="16" Margin="10"/>
+
+                        <DataGrid x:Name="TriviaGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True" Margin="10">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Cat" Binding="{Binding Category}" Width="70"/>
+                                <DataGridTextColumn Header="Întrebare" Binding="{Binding Text}" Width="*"/>
+                                <DataGridTextColumn Header="Tip" Binding="{Binding Type}" Width="40"/>
+                                <DataGridTextColumn Header="Răspuns" Binding="{Binding CorrectAnswer}" Width="80"/>
+                                <DataGridTemplateColumn Width="40">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate>
+                                            <Button Content="🗑️" Click="BtnDeleteTrivia_Click" Tag="{Binding Id}" Background="Transparent" BorderThickness="0"/>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <Button Grid.Row="2" Content="🔄 Refresh Listă" Click="BtnRefreshTrivia_Click" Margin="10" Height="30" Background="#3498DB" Foreground="White"/>
+                    </Grid>
                 </Grid>
             </TabItem>
         </TabControl>

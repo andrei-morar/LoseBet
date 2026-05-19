@@ -64,6 +64,7 @@ namespace LoseBet.API.Controllers
 
             return Ok(new
             {
+                Id = user.Id, // <--- ADAUGĂ LINIA ASTA!!!
                 Message = $"Login reușit! Bine ai venit, {user.Username}",
                 Username = user.Username,
                 Balance = user.Balance,

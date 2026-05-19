@@ -1,4 +1,4 @@
-﻿using LoseBet.Core.Models; // Importăm modelul SlotGame
+﻿using LoseBet.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -11,25 +11,25 @@ namespace LoseBet.Desktop
 {
     public partial class SlotsLobbyWindow : Window
     {
-        private string _username;
-        private string _balance;
         private static readonly HttpClient _httpClient = new HttpClient { BaseAddress = new Uri("https://localhost:7000/") };
 
-        public SlotsLobbyWindow(string username, string balance)
+        public SlotsLobbyWindow()
         {
             InitializeComponent();
-            _username = username;
-            _balance = balance;
-            TxtBalance.Text = $"Sold: {balance} RON";
-
+            RefreshBalance();
             _ = LoadGamesAsync();
+        }
+
+        private async void RefreshBalance()
+        {
+            decimal balance = await GameService.GetBalanceAsync();
+            TxtBalance.Text = $"Sold: {balance:F2} RON";
         }
 
         private async Task LoadGamesAsync()
         {
             try
             {
-                // Chemăm API-ul să ne dea jocurile active
                 var games = await _httpClient.GetFromJsonAsync<List<SlotGame>>("api/slots/active");
                 if (games != null)
                 {
@@ -49,8 +49,7 @@ namespace LoseBet.Desktop
 
             if (selectedGame != null)
             {
-                // Deschidem motorul de joc și îi dăm tot ce are nevoie
-                SlotEngineWindow engine = new SlotEngineWindow(_username, _balance, selectedGame);
+                SlotEngineWindow engine = new SlotEngineWindow(selectedGame);
                 engine.Show();
                 this.Close();
             }
@@ -58,13 +57,16 @@ namespace LoseBet.Desktop
 
         private void BtnBack_Click(object sender, RoutedEventArgs e)
         {
-            DashboardWindow dashboard = new DashboardWindow(_username, _balance);
+            // Am scos paramentrii din constructor (deoarece cred ca nu ii mai folosești, avand in vedere GameService)
+            // Dacă constructorul tău curent din DashboardWindow cere parametrii, păstrează-i pe cei vechi.
+            DashboardWindow dashboard = new DashboardWindow("", "");
             dashboard.Show();
             this.Close();
         }
 
         private void BtnRefresh_Click(object sender, RoutedEventArgs e)
         {
+            RefreshBalance();
             _ = LoadGamesAsync();
         }
     }

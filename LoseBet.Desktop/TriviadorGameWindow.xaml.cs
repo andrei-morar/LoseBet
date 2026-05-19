@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -39,6 +40,7 @@ namespace LoseBet.Desktop
         private Dictionary<string, List<string>> _hartăGranițe = new Dictionary<string, List<string>>();
         private string[] _judete = { "AB", "AR", "AG", "BC", "BH", "BN", "BT", "BV", "BR", "BZ", "CS", "CL", "CJ", "CT", "CV", "DB", "DJ", "GL", "GR", "GJ", "HR", "HD", "IL", "IS", "IF", "MM", "MH", "MS", "NT", "OT", "PH", "SM", "SJ", "SB", "SV", "TR", "TM", "TL", "VS", "VL", "VN", "B" };
         private List<TriviaQuestion> _questionsDB = new List<TriviaQuestion>();
+        private static readonly System.Net.Http.HttpClient _httpClient = new System.Net.Http.HttpClient { BaseAddress = new Uri("https://localhost:7000/") };
 
         private class BotPlayer
         {
@@ -60,7 +62,7 @@ namespace LoseBet.Desktop
 
             BuildBorders();
             InitializeBots();
-            LoadQuestions();
+            this.Loaded += async (s, e) => await LoadQuestionsFromDbAsync();
             SetupTimer();
             GenerateMap(); // AICI AM SCHIMBAT! Generăm harta vectorială
         }
@@ -125,97 +127,137 @@ namespace LoseBet.Desktop
             return false;
         }
 
-        private void LoadQuestions()
+        private async Task LoadQuestionsFromDbAsync()
         {
-            _questionsDB.Clear();
-            _questionsDB.Add(new TriviaQuestion { Category = "Istorie", Type = 2, Text = "Cine a fost primul domnitor al Țării Românești?", Answers = new[] { "Mircea cel Bătrân", "Basarab I", "Vlad Țepeș", "Mihai Viteazul" }, CorrectAnswer = "Basarab I" });
-            _questionsDB.Add(new TriviaQuestion { Category = "Istorie", Type = 2, Text = "Ce domnitor a realizat prima unire a Țărilor Române?", Answers = new[] { "Mihai Viteazul", "Alexandru Ioan Cuza", "Ștefan cel Mare", "Carol I" }, CorrectAnswer = "Mihai Viteazul" });
-            _questionsDB.Add(new TriviaQuestion { Category = "Istorie", Type = 1, Text = "În ce an a avut loc Marea Unire de la Alba Iulia?", CorrectAnswer = "1918" });
-            _questionsDB.Add(new TriviaQuestion { Category = "Istorie", Type = 1, Text = "În ce an a început Primul Război Mondial?", CorrectAnswer = "1914" });
-
-            _questionsDB.Add(new TriviaQuestion { Category = "Geografie", Type = 2, Text = "Care este cel mai înalt vârf muntos din România?", Answers = new[] { "Omu", "Negoiu", "Moldoveanu", "Peleaga" }, CorrectAnswer = "Moldoveanu" });
-            _questionsDB.Add(new TriviaQuestion { Category = "Geografie", Type = 2, Text = "În ce mare se varsă fluviul Dunărea?", Answers = new[] { "Marea Neagră", "Marea Mediterană", "Marea Roșie", "Marea Caspică" }, CorrectAnswer = "Marea Neagră" });
-            _questionsDB.Add(new TriviaQuestion { Category = "Geografie", Type = 1, Text = "Care este altitudinea vârfului Moldoveanu (în metri)?", CorrectAnswer = "2544" });
-            _questionsDB.Add(new TriviaQuestion { Category = "Geografie", Type = 1, Text = "Câte județe are România (fără București)?", CorrectAnswer = "41" });
-
-            _questionsDB = _questionsDB.OrderBy(q => _random.Next()).ToList();
+            try
+            {
+                var dbQuestions = await _httpClient.GetFromJsonAsync<List<LoseBet.Core.Models.TriviaQuestion>>("api/trivia/questions");
+                if (dbQuestions != null && dbQuestions.Count > 0)
+                {
+                    _questionsDB.Clear();
+                    foreach (var dbQ in dbQuestions)
+                    {
+                        var localQ = new TriviaQuestion
+                        {
+                            Category = dbQ.Category,
+                            Text = dbQ.Text,
+                            Type = dbQ.Type,
+                            CorrectAnswer = dbQ.CorrectAnswer,
+                            Answers = dbQ.Type == 2 ? new[] { dbQ.OptionA, dbQ.OptionB, dbQ.OptionC, dbQ.OptionD } : null
+                        };
+                        _questionsDB.Add(localQ);
+                    }
+                    // Le amestecăm
+                    _questionsDB = _questionsDB.OrderBy(q => _random.Next()).ToList();
+                }
+                else
+                {
+                    MessageBox.Show("Nu există întrebări în baza de date! Cere-i adminului să adauge.");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Eroare la încărcarea întrebărilor: " + ex.Message);
+            }
         }
 
         private TriviaQuestion GetNextQuestion()
         {
-            if (_questionsDB.Count == 0) LoadQuestions();
+            if (_questionsDB.Count == 0) LoadQuestionsFromDbAsync().Wait();
             TriviaQuestion q = _questionsDB[0];
             _questionsDB.RemoveAt(0);
             return q;
         }
 
         // ================= GENERAREA HĂRȚII VECTORIALE (SVG) =================
+        // ================= GENERAREA HĂRȚII VECTORIALE DIN FIȘIER SVG =================
+        // ================= GENERAREA HĂRȚII VECTORIALE DIN FIȘIER SVG =================
         private void GenerateMap()
         {
             MapCanvas.Children.Clear();
 
-            // Aici introduci coordonatele SVG reale pentru fiecare județ!
-            // Formatele sunt de tip: "M 10,20 L 30,40 Z" etc.
-            var svgHartaRomania = new Dictionary<string, string>
+            string svgPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", "romania.svg");
+
+            if (!System.IO.File.Exists(svgPath))
             {
-                // Am pus un pătrat provizoriu pentru CJ ca să vezi funcționalitatea.
-                // Tu va trebui să le înlocuiești pe toate 42 cu path-urile din SVG-ul tău.
-                { "CJ", "M 220,130 L 260,120 L 280,160 L 250,190 L 210,170 Z" },
-                { "AB", "M 210,170 L 250,190 L 240,240 L 190,220 L 180,190 Z" },
-                { "BH", "M 160,110 L 220,130 L 210,170 L 180,190 L 150,160 Z" }
-            };
+                MessageBox.Show("Fișierul romania.svg nu a fost găsit în folderul Resources!", "Eroare Harta");
+                return;
+            }
 
-            foreach (var judet in _judete)
+            try
             {
-                // Daca nu ai gasit inca SVG-ul pt județ, ii facem un cerc generic să nu crape
-                string pathData = svgHartaRomania.ContainsKey(judet) ? svgHartaRomania[judet] : "M 0,0 a 15,15 0 1,0 30,0 a 15,15 0 1,0 -30,0";
+                System.Xml.XmlDocument doc = new System.Xml.XmlDocument();
+                doc.Load(svgPath);
 
-                Button btnTerritory = new Button
+                System.Xml.XmlNodeList paths = doc.GetElementsByTagName("path");
+
+                foreach (System.Xml.XmlNode node in paths)
                 {
-                    Content = judet,
-                    Tag = "Liber",
-                    Background = Brushes.LightGray,
-                    Foreground = Brushes.Black,
-                    FontWeight = FontWeights.Bold,
-                    FontSize = 10,
-                    Cursor = System.Windows.Input.Cursors.Hand,
-                    ToolTip = $"Județul {judet}"
-                };
+                    if (node.Attributes["id"] != null && node.Attributes["d"] != null)
+                    {
+                        string id = node.Attributes["id"].Value.Replace("RO-", "");
+                        string pathData = node.Attributes["d"].Value;
+                        string fullName = node.Attributes["title"]?.Value ?? id;
 
-                // CREĂM ȘABLONUL VECTORIAL PENTRU BUTON
-                ControlTemplate template = new ControlTemplate(typeof(Button));
-                FrameworkElementFactory gridFactory = new FrameworkElementFactory(typeof(Grid));
+                        if (_hartăGranițe.ContainsKey(id))
+                        {
+                            Button btnTerritory = new Button
+                            {
+                                Content = id,
+                                Tag = "Liber",
+                                Background = Brushes.LightGray,
+                                Foreground = Brushes.Black,
+                                FontWeight = FontWeights.Bold,
+                                FontSize = 11, // Un font curat și clar
+                                Cursor = System.Windows.Input.Cursors.Hand,
+                                ToolTip = fullName
+                            };
 
-                // Desenăm granițele
-                FrameworkElementFactory pathFactory = new FrameworkElementFactory(typeof(System.Windows.Shapes.Path));
-                pathFactory.SetValue(System.Windows.Shapes.Path.DataProperty, Geometry.Parse(pathData));
+                            // Calculăm matematica pentru a afla centrul exact al județului!
+                            Geometry geom = Geometry.Parse(pathData);
+                            Rect bounds = geom.Bounds;
 
-                // Aici conectăm Background-ul butonului cu culoarea din interiorul județului (Când e albastru se face teritoriul albastru)
-                pathFactory.SetValue(System.Windows.Shapes.Path.FillProperty, new TemplateBindingExtension(Button.BackgroundProperty));
-                pathFactory.SetValue(System.Windows.Shapes.Path.StrokeProperty, Brushes.White); // Conturul alb dintre județe
-                pathFactory.SetValue(System.Windows.Shapes.Path.StrokeThicknessProperty, 1.5);
+                            ControlTemplate template = new ControlTemplate(typeof(Button));
+                            FrameworkElementFactory gridFactory = new FrameworkElementFactory(typeof(Grid));
 
-                // Afișăm textul (numele județului) fix peste desen
-                FrameworkElementFactory presenterFactory = new FrameworkElementFactory(typeof(ContentPresenter));
-                presenterFactory.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
-                presenterFactory.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+                            // 1. Desenăm Județul
+                            FrameworkElementFactory pathFactory = new FrameworkElementFactory(typeof(System.Windows.Shapes.Path));
+                            pathFactory.SetValue(System.Windows.Shapes.Path.DataProperty, geom);
+                            pathFactory.SetValue(System.Windows.Shapes.Path.FillProperty, new TemplateBindingExtension(Button.BackgroundProperty));
+                            pathFactory.SetValue(System.Windows.Shapes.Path.StrokeProperty, Brushes.White);
+                            pathFactory.SetValue(System.Windows.Shapes.Path.StrokeThicknessProperty, 1.2);
 
-                gridFactory.AppendChild(pathFactory);
-                gridFactory.AppendChild(presenterFactory);
-                template.VisualTree = gridFactory;
+                            // 2. Desenăm Textul
+                            FrameworkElementFactory presenterFactory = new FrameworkElementFactory(typeof(ContentPresenter));
+                            presenterFactory.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Left);
+                            presenterFactory.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Top);
 
-                btnTerritory.Template = template;
-                btnTerritory.Click += BtnTerritory_Click;
+                            // Calculăm poziția textului ca să fie pe centrul județului (scădem 10-15 pixeli ca să compensăm lățimea cuvântului)
+                            double textOffsetX = bounds.Left + (bounds.Width / 2) - 12;
+                            double textOffsetY = bounds.Top + (bounds.Height / 2) - 10;
 
-                // Nu mai setăm X și Y manual! Formele SVG știu deja unde trebuie să stea.
-                // Excepție fac cele la care nu le-ai pus path-ul încă (acele cercuri). Pentru ele facem o aranjare basic temporară.
-                if (!svgHartaRomania.ContainsKey(judet))
-                {
-                    Canvas.SetLeft(btnTerritory, _random.Next(50, 500));
-                    Canvas.SetTop(btnTerritory, _random.Next(50, 350));
+                            // Corecție minoră pentru București (B) și Ilfov (IF) ca să nu se încalece, fiind foarte mici
+                            if (id == "B") { textOffsetX -= 8; textOffsetY += 5; }
+                            if (id == "IF") { textOffsetX += 8; textOffsetY -= 8; }
+
+                            presenterFactory.SetValue(ContentPresenter.MarginProperty, new Thickness(textOffsetX, textOffsetY, 0, 0));
+
+                            // Asamblăm piesele
+                            gridFactory.AppendChild(pathFactory);
+                            gridFactory.AppendChild(presenterFactory);
+                            template.VisualTree = gridFactory;
+
+                            btnTerritory.Template = template;
+                            btnTerritory.Click += BtnTerritory_Click;
+
+                            MapCanvas.Children.Add(btnTerritory);
+                        }
+                    }
                 }
-
-                MapCanvas.Children.Add(btnTerritory);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("A apărut o eroare la desenarea hărții: " + ex.Message);
             }
         }
 

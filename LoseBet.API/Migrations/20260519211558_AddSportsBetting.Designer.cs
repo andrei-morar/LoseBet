@@ -3,6 +3,7 @@ using System;
 using LoseBet.API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace LoseBet.API.Migrations
 {
     [DbContext(typeof(LoseBetDbContext))]
-    partial class LoseBetDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260519211558_AddSportsBetting")]
+    partial class AddSportsBetting
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -376,46 +379,6 @@ namespace LoseBet.API.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Transactions");
-                });
-
-            modelBuilder.Entity("LoseBet.Core.Models.TriviaQuestion", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("CorrectAnswer")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("OptionA")
-                        .HasColumnType("text");
-
-                    b.Property<string>("OptionB")
-                        .HasColumnType("text");
-
-                    b.Property<string>("OptionC")
-                        .HasColumnType("text");
-
-                    b.Property<string>("OptionD")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Text")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("TriviaQuestions");
                 });
 
             modelBuilder.Entity("LoseBet.Core.Models.User", b =>

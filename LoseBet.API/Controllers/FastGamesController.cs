@@ -171,7 +171,7 @@ namespace LoseBet.API.Controllers
             {
                 SessionId = session.Id,
                 Message = "Avionul a decolat!",
-                // NU trimitem CrashPoint-ul aici, altfel userul ar trișa!
+                CrashPoint = session.CrashPoint // <-- ADAUGĂ ASTA
             });
         }
 

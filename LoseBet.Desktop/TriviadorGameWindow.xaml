@@ -1,7 +1,7 @@
 ﻿<Window x:Class="LoseBet.Desktop.TriviadorGameWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="LoseBet - Triviador Arena" Height="700" Width="1100" WindowStartupLocation="CenterScreen" Background="#2C3E50">
+        Title="LoseBet - Triviador Arena" Height="700" Width="1100" WindowStartupLocation="CenterScreen" Background="#2C3E50" WindowState="Maximized">
 
     <Grid Margin="10">
         <Grid.RowDefinitions>
@@ -35,8 +35,8 @@
 
                     <TextBlock x:Name="TxtMapStatus" Text="FAZA 1: Alege-ți CAPITALA!" Foreground="Gold" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,10"/>
 
-                    <Viewbox Grid.Row="1" Stretch="Uniform" VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <Canvas x:Name="MapCanvas" Width="650" Height="450" Background="#2C3E50">
+                    <Viewbox Grid.Row="1" Stretch="Uniform" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10">
+                        <Canvas x:Name="MapCanvas" Width="612.36" Height="432.29" Background="#2C3E50">
                         </Canvas>
                     </Viewbox>
                 </Grid>

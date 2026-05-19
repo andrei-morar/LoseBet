@@ -22,4 +22,10 @@
     </Resource>
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Resources\romania.svg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
