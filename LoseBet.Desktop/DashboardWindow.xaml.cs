@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Windows;
+using System.Windows.Media;
 
 namespace LoseBet.Desktop
 {
@@ -127,6 +128,41 @@ namespace LoseBet.Desktop
         {
             AdminWindow adminWindow = new AdminWindow(_savedUsername);
             adminWindow.Show();
+        }
+
+      
+        // --- LOGICĂ PENTRU MENIU CATEGORII ---
+        private void BtnCategoryEdu_Click(object sender, RoutedEventArgs e)
+        {
+            PanelEdu.Visibility = Visibility.Visible;
+            PanelCasino.Visibility = Visibility.Collapsed;
+
+            // Schimbăm culorile să arate care tab este activ
+            BtnCategoryEdu.Background = (SolidColorBrush)new BrushConverter().ConvertFrom("#3498DB"); // Albastru
+            BtnCategoryCasino.Background = (SolidColorBrush)new BrushConverter().ConvertFrom("#7F8C8D"); // Gri
+        }
+
+        private void BtnCategoryCasino_Click(object sender, RoutedEventArgs e)
+        {
+            PanelEdu.Visibility = Visibility.Collapsed;
+            PanelCasino.Visibility = Visibility.Visible;
+
+            // Schimbăm culorile
+            BtnCategoryEdu.Background = (SolidColorBrush)new BrushConverter().ConvertFrom("#7F8C8D"); // Gri
+            BtnCategoryCasino.Background = (SolidColorBrush)new BrushConverter().ConvertFrom("#E74C3C"); // Roșu Casino
+        }
+
+        // --- BUTOANE JOCURI NOI EDUCATIVE ---
+        private void BtnWordle_Click(object sender, RoutedEventArgs e)
+        {
+            WordleWindow wordleGame = new WordleWindow();
+            wordleGame.Show();
+        }
+
+        private void BtnCifre_Click(object sender, RoutedEventArgs e)
+        {
+            CifreWindow cifreGame = new CifreWindow();
+            cifreGame.Show();
         }
     }
 }

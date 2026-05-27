@@ -1,16 +1,17 @@
 ﻿<Window x:Class="LoseBet.Desktop.DashboardWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="LoseBet - Casino Dashboard" Height="503" Width="875" WindowStartupLocation="CenterScreen">
+        Title="LoseBet - Dashboard" Height="550" Width="875" WindowStartupLocation="CenterScreen">
 
     <Grid Margin="20">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Margin="0,0,0,30">
+        <Grid Grid.Row="0" Margin="0,0,0,20">
             <TextBlock x:Name="TxtWelcome" Text="Salut, Jucătorule!" FontSize="20" FontWeight="Bold" HorizontalAlignment="Left"/>
 
             <StackPanel HorizontalAlignment="Right">
@@ -20,22 +21,30 @@
             </StackPanel>
         </Grid>
 
-        <StackPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center">
-            <TextBlock Text="ALEGE UN JOC" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,20">
+            <Button x:Name="BtnCategoryEdu" Content="🧠 CULTURĂ GENERALĂ" Click="BtnCategoryEdu_Click" Width="220" Height="45" Margin="10,0" Background="#3498DB" Foreground="White" FontSize="16" FontWeight="Bold" Cursor="Hand" BorderThickness="0"/>
+            <Button x:Name="BtnCategoryCasino" Content="🎰 CAZINO &amp; NOROC" Click="BtnCategoryCasino_Click" Width="220" Height="45" Margin="10,0" Background="#7F8C8D" Foreground="White" FontSize="16" FontWeight="Bold" Cursor="Hand" BorderThickness="0"/>
+        </StackPanel>
 
-            <WrapPanel HorizontalAlignment="Center" Height="244" Width="712">
+        <Grid Grid.Row="2" VerticalAlignment="Top">
+
+            <WrapPanel x:Name="PanelEdu" HorizontalAlignment="Center" Width="712" Visibility="Visible">
+                <Button Content="🧠 Triviador România" Click="BtnTriviador_Click" Width="150" Height="100" Margin="10" Background="LightBlue" FontSize="14" FontWeight="Bold" Cursor="Hand"/>
+                <Button Content="🔤 Wordle RO" Click="BtnWordle_Click" Width="150" Height="100" Margin="10" Background="LightBlue" FontSize="14" FontWeight="Bold" Cursor="Hand"/>
+                <Button Content="🔢 Cifre și Calcule" Click="BtnCifre_Click" Width="150" Height="100" Margin="10" Background="LightBlue" FontSize="14" FontWeight="Bold" Cursor="Hand"/>
+            </WrapPanel>
+
+            <WrapPanel x:Name="PanelCasino" HorizontalAlignment="Center" Width="712" Visibility="Collapsed">
                 <Button Content="🎰 Păcănele" Click="BtnSlots_Click" Width="150" Height="100" Margin="10" Background="LightGray" FontSize="14" FontWeight="Bold" Cursor="Hand"/>
                 <Button Content="🎡 Ruletă" Click="BtnRoulette_Click" Width="150" Height="100" Margin="10" Background="LightGray" FontSize="14" FontWeight="Bold" Cursor="Hand"/>
                 <Button Content="🃏 Blackjack" Click="BtnBlackjack_Click" Width="150" Height="100" Margin="10" Background="LightGray" FontSize="14" FontWeight="Bold" Cursor="Hand"/>
                 <Button Content="⚽ Pariuri" Click="BtnSports_Click" Width="150" Height="100" Margin="10" Background="LightGray" FontSize="14" FontWeight="Bold" Cursor="Hand"/>
-                <Button Content="🧠 Triviador" Click="BtnTriviador_Click" Width="150" Height="100" Margin="10" Background="LightGray" FontSize="14" FontWeight="Bold" Cursor="Hand"/>
                 <Button Content="🎩 Alba-Neagra" Click="BtnAlbaNeagra_Click" Width="150" Height="100" Margin="10" Background="LightGray" FontSize="14" FontWeight="Bold" Cursor="Hand"/>
-
                 <Button x:Name="BtnMines" Content="💣 Mine" Click="BtnMines_Click" Width="150" Height="100" Margin="10" Background="LightGray" FontSize="14" FontWeight="Bold" Cursor="Hand"/>
                 <Button x:Name="BtnAviator" Content="✈️ Aviator" Click="BtnAviator_Click" Width="150" Height="100" Margin="10" Background="LightGray" FontSize="14" FontWeight="Bold" Cursor="Hand"/>
             </WrapPanel>
-        </StackPanel>
+        </Grid>
 
-        <Button Grid.Row="2" Content="Delogare (Logout)" Click="BtnLogout_Click" Width="120" Height="35" HorizontalAlignment="Right" Background="DarkRed" Foreground="White" Margin="0,20,0,0" Cursor="Hand"/>
+        <Button Grid.Row="3" Content="Delogare (Logout)" Click="BtnLogout_Click" Width="120" Height="35" HorizontalAlignment="Right" Background="DarkRed" Foreground="White" Margin="0,20,0,0" Cursor="Hand"/>
     </Grid>
 </Window>

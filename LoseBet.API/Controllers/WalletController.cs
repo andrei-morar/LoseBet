@@ -80,6 +80,20 @@ namespace LoseBet.API.Controllers
 
             return Ok($"Retragere reușită! Sold rămas: {user.Balance} RON");
         }
+        // 4. Actualizare balanță (pentru jocuri: scade miza sau adaugă câștigul)
+        [HttpPost("update-balance")]
+        public async Task<IActionResult> UpdateBalance([FromBody] WalletRequest request)
+        {
+            var user = await _context.Users.FindAsync(request.UserId);
+            if (user == null) return NotFound("Utilizator negăsit.");
+
+            // Dacă e miză (pariu), suma vine cu minus și se va scădea.
+            // Dacă e câștig, suma vine cu plus și se va adăuga.
+            user.Balance += request.Amount;
+
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
     }
 
     // Modelul de date pentru cererile de bani
@@ -88,4 +102,6 @@ namespace LoseBet.API.Controllers
         public int UserId { get; set; }
         public decimal Amount { get; set; }
     }
+
+
 }
