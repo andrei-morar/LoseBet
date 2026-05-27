@@ -80,4 +80,4 @@ namespace LoseBet.Desktop
         public decimal NewBalance { get; set; }
         public decimal WinAmount { get; set; }
     }
-}
+}// samrale
