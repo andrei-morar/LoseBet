@@ -1,81 +1,402 @@
 ﻿<Window x:Class="LoseBet.Desktop.AlbaNeagraWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="LoseBet - Alba Neagra" Height="500" Width="700" Background="#1a1a2e" WindowStartupLocation="CenterScreen" ResizeMode="NoResize">
-	<Grid>
-		<Grid.RowDefinitions>
-			<RowDefinition Height="60"/>
-			<RowDefinition Height="*"/>
-			<RowDefinition Height="100"/>
-		</Grid.RowDefinitions>
+        Title="LoseBet - Alba Neagra" Height="650" Width="900"
+        WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
+        Background="#0B0B0B">
 
-		<Border Grid.Row="0" Background="#16213e" Padding="15,0">
-			<DockPanel VerticalAlignment="Center">
-				<Button Content="⬅ Înapoi" Width="80" Height="30" Click="BtnBack_Click" Background="#0f3460" Foreground="White" BorderThickness="0" Cursor="Hand"/>
-				<StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-					<TextBlock Text="Sold: " Foreground="White" FontSize="16" VerticalAlignment="Center"/>
-					<TextBlock x:Name="TxtBalance" Text="0.00 RON" Foreground="Gold" FontSize="18" FontWeight="Bold" VerticalAlignment="Center"/>
-				</StackPanel>
-				<TextBlock Text="🎩 ALBA-NEAGRA" Foreground="White" FontSize="22" FontWeight="Black" HorizontalAlignment="Center"/>
-			</DockPanel>
-		</Border>
+    <Window.Resources>
 
-		<Grid Grid.Row="1">
-			<StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-				<TextBlock x:Name="TxtStatus" Text="Alege miza și apasă START!" Foreground="#e94560" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+        <DropShadowEffect x:Key="NeonGlow" Color="#FFD700" BlurRadius="20" ShadowDepth="0" Opacity="0.7"/>
+        <DropShadowEffect x:Key="DarkShadow" Color="Black" BlurRadius="15" ShadowDepth="5" Opacity="0.8"/>
+        <DropShadowEffect x:Key="GreenGlow" Color="#00E676" BlurRadius="20" ShadowDepth="0" Opacity="0.8"/>
+        <DropShadowEffect x:Key="RedGlow" Color="#FF3333" BlurRadius="20" ShadowDepth="0" Opacity="0.8"/>
 
-				<Button x:Name="BtnStart" Content="▶ START JOC (Amestecă)" Height="45" Width="250" Background="#e94560" Foreground="White" FontSize="16" FontWeight="Bold" Click="BtnStart_Click" BorderThickness="0" Cursor="Hand" Margin="0,0,0,30"/>
+        <!-- Stilul paharului (cutie trapezoidala) -->
+        <Style TargetType="Button" x:Key="CupButtonStyle">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Width" Value="110"/>
+            <Setter Property="Height" Value="120"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid x:Name="CupGrid">
+                            <!-- Corpul paharului: trapez simulat cu Border + Clip -->
+                            <Path x:Name="CupBody"
+                                  Data="M 10,0 L 100,0 L 110,110 L 0,110 Z"
+                                  Fill="#C4846A"
+                                  Stroke="#6B3A24"
+                                  StrokeThickness="2"
+                                  Effect="{StaticResource DarkShadow}">
+                            </Path>
+                            <!-- Highlight lateral stanga -->
+                            <Path Data="M 24,0 L 18,110"
+                                  Stroke="#A06448" StrokeThickness="1.5" Opacity="0.4"/>
+                            <!-- Highlight lateral dreapta -->
+                            <Path Data="M 86,0 L 92,110"
+                                  Stroke="#6B3A24" StrokeThickness="1.5" Opacity="0.4"/>
+                            <!-- Capac (banda de sus) -->
+                            <Rectangle x:Name="CupCap"
+                                       Width="110" Height="14"
+                                       VerticalAlignment="Top"
+                                       RadiusX="3" RadiusY="3"
+                                       Fill="#6B3A24"/>
+                            <!-- Highlight capac -->
+                            <Rectangle Width="110" Height="6"
+                                       VerticalAlignment="Top"
+                                       RadiusX="3" RadiusY="3"
+                                       Fill="#A06448" Opacity="0.5"/>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="CupBody" Property="Effect" Value="{StaticResource NeonGlow}"/>
+                                <Setter TargetName="CupBody" Property="Fill" Value="#D4946A"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="CupGrid" Property="Opacity" Value="0.9"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
-				<Canvas x:Name="GameCanvas" Width="380" Height="150" HorizontalAlignment="Center">
-					<StackPanel x:Name="Cup1" Canvas.Left="0" Canvas.Top="0" Width="100">
-						<TextBlock x:Name="Ball1" Text="🔴" FontSize="40" HorizontalAlignment="Center" Visibility="Hidden" Margin="0,0,0,-20" Panel.ZIndex="0"/>
-						<Button x:Name="BtnCup1" Content="🎩" Tag="1" FontSize="80" Background="Transparent" BorderThickness="0" Click="BtnCup_Click" Cursor="Hand" Panel.ZIndex="1" IsEnabled="False">
-							<Button.Template>
-								<ControlTemplate TargetType="Button">
-									<Border Background="{TemplateBinding Background}">
-										<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-									</Border>
-								</ControlTemplate>
-							</Button.Template>
-						</Button>
-					</StackPanel>
+        <!-- Stilul butoanelor rotunde de miză -->
+        <Style TargetType="Button" x:Key="RoundBetButton">
+            <Setter Property="Background" Value="#1A1A1A"/>
+            <Setter Property="Foreground" Value="#FFD700"/>
+            <Setter Property="FontSize" Value="24"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Width" Value="50"/>
+            <Setter Property="Height" Value="50"/>
+            <Setter Property="BorderBrush" Value="#333"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="25"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#333"/>
+                                <Setter Property="BorderBrush" Value="#FFD700"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
 
-					<StackPanel x:Name="Cup2" Canvas.Left="140" Canvas.Top="0" Width="100">
-						<TextBlock x:Name="Ball2" Text="🔴" FontSize="40" HorizontalAlignment="Center" Visibility="Hidden" Margin="0,0,0,-20" Panel.ZIndex="0"/>
-						<Button x:Name="BtnCup2" Content="🎩" Tag="2" FontSize="80" Background="Transparent" BorderThickness="0" Click="BtnCup_Click" Cursor="Hand" Panel.ZIndex="1" IsEnabled="False">
-							<Button.Template>
-								<ControlTemplate TargetType="Button">
-									<Border Background="{TemplateBinding Background}">
-										<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-									</Border>
-								</ControlTemplate>
-							</Button.Template>
-						</Button>
-					</StackPanel>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="70"/>
+            <!-- Header -->
+            <RowDefinition Height="*"/>
+            <!-- Arena principala -->
+            <RowDefinition Height="120"/>
+            <!-- Footer cu miza -->
+        </Grid.RowDefinitions>
 
-					<StackPanel x:Name="Cup3" Canvas.Left="280" Canvas.Top="0" Width="100">
-						<TextBlock x:Name="Ball3" Text="🔴" FontSize="40" HorizontalAlignment="Center" Visibility="Hidden" Margin="0,0,0,-20" Panel.ZIndex="0"/>
-						<Button x:Name="BtnCup3" Content="🎩" Tag="3" FontSize="80" Background="Transparent" BorderThickness="0" Click="BtnCup_Click" Cursor="Hand" Panel.ZIndex="1" IsEnabled="False">
-							<Button.Template>
-								<ControlTemplate TargetType="Button">
-									<Border Background="{TemplateBinding Background}">
-										<ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-									</Border>
-								</ControlTemplate>
-							</Button.Template>
-						</Button>
-					</StackPanel>
-				</Canvas>
-			</StackPanel>
-		</Grid>
+        <!-- ===== HEADER ===== -->
+        <Border Grid.Row="0" Background="#050505" BorderBrush="#222" BorderThickness="0,0,0,1">
+            <Grid Margin="20,0">
+                <Button Content="◄ ÎNAPOI LA LOBBY" Width="170" Height="35"
+                        HorizontalAlignment="Left" Click="BtnBack_Click"
+                        Background="Transparent" Foreground="#888"
+                        BorderBrush="#333" BorderThickness="1"
+                        Cursor="Hand" FontWeight="Bold">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="17"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
 
-		<Border Grid.Row="2" Background="#16213e" BorderBrush="#0f3460" BorderThickness="0,3,0,0" Padding="15">
-			<StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-				<TextBlock Text="Miza (RON):" Foreground="White" FontSize="18" VerticalAlignment="Center" Margin="0,0,15,0"/>
-				<Button Content="-" Width="40" Height="40" Background="#0f3460" Foreground="White" FontWeight="Bold" FontSize="20" BorderThickness="0" Click="BtnLowerBet_Click"/>
-				<TextBox x:Name="TxtBet" Text="10.00" Width="100" Height="40" FontSize="20" TextAlignment="Center" FontWeight="Bold" Background="#0a0a0a" Foreground="White" BorderThickness="0" VerticalContentAlignment="Center"/>
-				<Button Content="+" Width="40" Height="40" Background="#0f3460" Foreground="White" FontWeight="Bold" FontSize="20" BorderThickness="0" Click="BtnHigherBet_Click"/>
-			</StackPanel>
-		</Border>
-	</Grid>
+                <TextBlock Text="A L B A   -   N E A G R Ă"
+                           Foreground="#FFD700" FontSize="24" FontWeight="Black"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                           Effect="{StaticResource NeonGlow}"/>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <TextBlock Text="Sold curent: " Foreground="#888" FontSize="14" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="TxtBalance" Text="0.00 RON"
+                               Foreground="#00E676" FontSize="18" FontWeight="Black" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ===== ARENA PRINCIPALA ===== -->
+        <Border Grid.Row="1" Background="#0F0F0F">
+            <Grid>
+
+                <!-- Lumina de fundal aurie subtila -->
+                <Ellipse Width="600" Height="250" HorizontalAlignment="Center"
+                         VerticalAlignment="Center" Opacity="0.08">
+                    <Ellipse.Fill>
+                        <RadialGradientBrush>
+                            <GradientStop Color="#FFD700" Offset="0"/>
+                            <GradientStop Color="Transparent" Offset="1"/>
+                        </RadialGradientBrush>
+                    </Ellipse.Fill>
+                </Ellipse>
+
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-10,0,0">
+
+                    <!-- Dealer (desenat cu forme WPF) -->
+                    <Canvas Width="540" Height="180" HorizontalAlignment="Center" Margin="0,0,0,0">
+
+                        <!-- Masa/blaturi -->
+                        <Rectangle Canvas.Left="0" Canvas.Top="148" Width="540" Height="32"
+                                   Fill="#1a5c2a"/>
+                        <Rectangle Canvas.Left="0" Canvas.Top="145" Width="540" Height="8"
+                                   Fill="#6B3A1A" RadiusX="2" RadiusY="2"/>
+
+                        <!-- Stive de jetoane stanga - rosii -->
+                        <Ellipse Canvas.Left="30" Canvas.Top="140" Width="44" Height="12" Fill="#8B0000"/>
+                        <Rectangle Canvas.Left="30" Canvas.Top="88" Width="44" Height="55" Fill="#CC2222" RadiusX="3" RadiusY="3"/>
+                        <Ellipse Canvas.Left="30" Canvas.Top="82" Width="44" Height="12" Fill="#FF4444"/>
+                        <Ellipse Canvas.Left="30" Canvas.Top="74" Width="44" Height="12" Fill="#CC2222"/>
+                        <Ellipse Canvas.Left="30" Canvas.Top="66" Width="44" Height="12" Fill="#FF4444"/>
+                        <Ellipse Canvas.Left="30" Canvas.Top="58" Width="44" Height="12" Fill="#CC2222"/>
+
+                        <!-- Stive de jetoane stanga - verzi -->
+                        <Ellipse Canvas.Left="80" Canvas.Top="140" Width="44" Height="12" Fill="#004400"/>
+                        <Rectangle Canvas.Left="80" Canvas.Top="98" Width="44" Height="45" Fill="#1a7a3a" RadiusX="3" RadiusY="3"/>
+                        <Ellipse Canvas.Left="80" Canvas.Top="92" Width="44" Height="12" Fill="#22BB55"/>
+                        <Ellipse Canvas.Left="80" Canvas.Top="84" Width="44" Height="12" Fill="#1a7a3a"/>
+                        <Ellipse Canvas.Left="80" Canvas.Top="76" Width="44" Height="12" Fill="#22BB55"/>
+
+                        <!-- Stive de jetoane dreapta - albastre -->
+                        <Ellipse Canvas.Left="466" Canvas.Top="140" Width="44" Height="12" Fill="#003388"/>
+                        <Rectangle Canvas.Left="466" Canvas.Top="85" Width="44" Height="58" Fill="#1a44CC" RadiusX="3" RadiusY="3"/>
+                        <Ellipse Canvas.Left="466" Canvas.Top="79" Width="44" Height="12" Fill="#2255FF"/>
+                        <Ellipse Canvas.Left="466" Canvas.Top="71" Width="44" Height="12" Fill="#1a44CC"/>
+                        <Ellipse Canvas.Left="466" Canvas.Top="63" Width="44" Height="12" Fill="#2255FF"/>
+                        <Ellipse Canvas.Left="466" Canvas.Top="55" Width="44" Height="12" Fill="#1a44CC"/>
+
+                        <!-- Stive de jetoane dreapta - mov -->
+                        <Ellipse Canvas.Left="416" Canvas.Top="140" Width="44" Height="12" Fill="#550055"/>
+                        <Rectangle Canvas.Left="416" Canvas.Top="98" Width="44" Height="45" Fill="#882288" RadiusX="3" RadiusY="3"/>
+                        <Ellipse Canvas.Left="416" Canvas.Top="92" Width="44" Height="12" Fill="#BB44BB"/>
+                        <Ellipse Canvas.Left="416" Canvas.Top="84" Width="44" Height="12" Fill="#882288"/>
+                        <Ellipse Canvas.Left="416" Canvas.Top="76" Width="44" Height="12" Fill="#BB44BB"/>
+
+                        <!-- Corp dealer (sacou inchis) -->
+                        <Rectangle Canvas.Left="175" Canvas.Top="28" Width="190" Height="155" Fill="#1a1a2e" RadiusX="10" RadiusY="10"/>
+
+                        <!-- Camasa/cravata -->
+                        <Polygon Points="270,38 250,68 270,125 290,68" Fill="#E8E0D0"/>
+                        <Polygon Points="270,48 263,78 270,118 277,78" Fill="#2a2a5a"/>
+
+                        <!-- Rever stanga -->
+                        <Polygon Points="250,33 175,78 215,33" Fill="#141428"/>
+                        <!-- Rever dreapta -->
+                        <Polygon Points="290,33 365,78 325,33" Fill="#141428"/>
+
+                        <!-- Nasturi -->
+                        <Ellipse Canvas.Left="266" Canvas.Top="76" Width="8" Height="8" Fill="#D4A017" Opacity="0.8"/>
+                        <Ellipse Canvas.Left="266" Canvas.Top="100" Width="8" Height="8" Fill="#D4A017" Opacity="0.8"/>
+
+                        <!-- Brat stanga -->
+                        <Rectangle Canvas.Left="118" Canvas.Top="78" Width="60" Height="90" Fill="#1a1a2e" RadiusX="8" RadiusY="8"/>
+                        <!-- Manseta stanga -->
+                        <Rectangle Canvas.Left="118" Canvas.Top="158" Width="60" Height="14" Fill="#1a1a2e" RadiusX="4" RadiusY="4"/>
+                        <!-- Mana stanga -->
+                        <Ellipse Canvas.Left="128" Canvas.Top="166" Width="44" Height="22" Fill="#C8956A"/>
+                        <Ellipse Canvas.Left="112" Canvas.Top="158" Width="18" Height="10" Fill="#C8956A">
+                            <Ellipse.RenderTransform>
+                                <RotateTransform Angle="-20" CenterX="9" CenterY="5"/>
+                            </Ellipse.RenderTransform>
+                        </Ellipse>
+                        <Ellipse Canvas.Left="108" Canvas.Top="166" Width="18" Height="10" Fill="#C8956A">
+                            <Ellipse.RenderTransform>
+                                <RotateTransform Angle="-10" CenterX="9" CenterY="5"/>
+                            </Ellipse.RenderTransform>
+                        </Ellipse>
+
+                        <!-- Brat dreapta -->
+                        <Rectangle Canvas.Left="362" Canvas.Top="78" Width="60" Height="90" Fill="#1a1a2e" RadiusX="8" RadiusY="8"/>
+                        <!-- Manseta dreapta -->
+                        <Rectangle Canvas.Left="362" Canvas.Top="158" Width="60" Height="14" Fill="#1a1a2e" RadiusX="4" RadiusY="4"/>
+                        <!-- Mana dreapta -->
+                        <Ellipse Canvas.Left="368" Canvas.Top="166" Width="44" Height="22" Fill="#C8956A"/>
+                        <Ellipse Canvas.Left="410" Canvas.Top="158" Width="18" Height="10" Fill="#C8956A">
+                            <Ellipse.RenderTransform>
+                                <RotateTransform Angle="20" CenterX="9" CenterY="5"/>
+                            </Ellipse.RenderTransform>
+                        </Ellipse>
+                        <Ellipse Canvas.Left="414" Canvas.Top="166" Width="18" Height="10" Fill="#C8956A">
+                            <Ellipse.RenderTransform>
+                                <RotateTransform Angle="10" CenterX="9" CenterY="5"/>
+                            </Ellipse.RenderTransform>
+                        </Ellipse>
+
+                        <!-- Guler camasa -->
+                        <Rectangle Canvas.Left="248" Canvas.Top="26" Width="44" Height="20" Fill="#E8E0D0" RadiusX="3" RadiusY="3"/>
+
+                        <!-- Cap -->
+                        <Ellipse Canvas.Left="235" Canvas.Top="0" Width="70" Height="42" Fill="#C8956A"/>
+                        <!-- Par -->
+                        <Ellipse Canvas.Left="235" Canvas.Top="-10" Width="70" Height="26" Fill="#2a1a0a"/>
+                        <!-- Ochi stang -->
+                        <Ellipse Canvas.Left="252" Canvas.Top="12" Width="8" Height="8" Fill="#1a1a1a"/>
+                        <Ellipse Canvas.Left="253" Canvas.Top="11" Width="3" Height="3" Fill="White"/>
+                        <!-- Ochi drept -->
+                        <Ellipse Canvas.Left="280" Canvas.Top="12" Width="8" Height="8" Fill="#1a1a1a"/>
+                        <Ellipse Canvas.Left="281" Canvas.Top="11" Width="3" Height="3" Fill="White"/>
+
+                        <!-- Gura dealer (Path animabil) -->
+                        <Path x:Name="DealerMouth"
+                              Data="M 258,28 Q 270,33 282,28"
+                              Stroke="#8B5A44" StrokeThickness="2" Fill="Transparent"/>
+                    </Canvas>
+
+                    <!-- Status mesaj -->
+                    <Border Background="#111" BorderBrush="#333" BorderThickness="1"
+                            CornerRadius="10" Padding="20,8" Margin="0,4,0,8"
+                            HorizontalAlignment="Center">
+                        <TextBlock x:Name="TxtStatus"
+                                   Text="ALEGE MIZA ȘI APASĂ AMESTECĂ!"
+                                   Foreground="#FFD700" FontSize="20" FontWeight="Bold"
+                                   HorizontalAlignment="Center"/>
+                    </Border>
+
+                    <!-- Masa de joc (felt verde) -->
+                    <Grid Width="540" Height="160" HorizontalAlignment="Center">
+
+                        <!-- Elipsa felt -->
+                        <Ellipse Width="500" Height="80"
+                                 VerticalAlignment="Bottom" Margin="0,0,0,10">
+                            <Ellipse.Fill>
+                                <RadialGradientBrush>
+                                    <GradientStop Color="#1a7a3a" Offset="0"/>
+                                    <GradientStop Color="#155c2c" Offset="1"/>
+                                </RadialGradientBrush>
+                            </Ellipse.Fill>
+                            <Ellipse.Stroke>
+                                <SolidColorBrush Color="#0d4d20"/>
+                            </Ellipse.Stroke>
+                            <Ellipse.StrokeThickness>3</Ellipse.StrokeThickness>
+                        </Ellipse>
+
+                        <!-- Canvas-ul cu pahare -->
+                        <Canvas x:Name="GameCanvas" Width="500" Height="150"
+                                HorizontalAlignment="Center" VerticalAlignment="Top"
+                                Margin="0,5,0,0">
+
+                            <!-- Paharul 1 -->
+                            <StackPanel x:Name="Cup1" Canvas.Left="0" Canvas.Top="20" Width="110">
+                                <Ellipse x:Name="Ball1" Width="24" Height="24"
+                                         Margin="43,0,43,-12"
+                                         Visibility="Hidden" Panel.ZIndex="0">
+                                    <Ellipse.Fill>
+                                        <RadialGradientBrush Center="0.35,0.35" GradientOrigin="0.35,0.35">
+                                            <GradientStop Color="#FF6666" Offset="0"/>
+                                            <GradientStop Color="#CC0000" Offset="1"/>
+                                        </RadialGradientBrush>
+                                    </Ellipse.Fill>
+                                    <Ellipse.Effect>
+                                        <DropShadowEffect Color="#FF0000" BlurRadius="12" ShadowDepth="0"/>
+                                    </Ellipse.Effect>
+                                </Ellipse>
+                                <Button x:Name="BtnCup1" Style="{StaticResource CupButtonStyle}"
+                                        Tag="1" Click="BtnCup_Click"
+                                        Panel.ZIndex="1" IsEnabled="False"/>
+                            </StackPanel>
+
+                            <!-- Paharul 2 -->
+                            <StackPanel x:Name="Cup2" Canvas.Left="195" Canvas.Top="20" Width="110">
+                                <Ellipse x:Name="Ball2" Width="24" Height="24"
+                                         Margin="43,0,43,-12"
+                                         Visibility="Hidden" Panel.ZIndex="0">
+                                    <Ellipse.Fill>
+                                        <RadialGradientBrush Center="0.35,0.35" GradientOrigin="0.35,0.35">
+                                            <GradientStop Color="#FF6666" Offset="0"/>
+                                            <GradientStop Color="#CC0000" Offset="1"/>
+                                        </RadialGradientBrush>
+                                    </Ellipse.Fill>
+                                    <Ellipse.Effect>
+                                        <DropShadowEffect Color="#FF0000" BlurRadius="12" ShadowDepth="0"/>
+                                    </Ellipse.Effect>
+                                </Ellipse>
+                                <Button x:Name="BtnCup2" Style="{StaticResource CupButtonStyle}"
+                                        Tag="2" Click="BtnCup_Click"
+                                        Panel.ZIndex="1" IsEnabled="False"/>
+                            </StackPanel>
+
+                            <!-- Paharul 3 -->
+                            <StackPanel x:Name="Cup3" Canvas.Left="390" Canvas.Top="20" Width="110">
+                                <Ellipse x:Name="Ball3" Width="24" Height="24"
+                                         Margin="43,0,43,-12"
+                                         Visibility="Hidden" Panel.ZIndex="0">
+                                    <Ellipse.Fill>
+                                        <RadialGradientBrush Center="0.35,0.35" GradientOrigin="0.35,0.35">
+                                            <GradientStop Color="#FF6666" Offset="0"/>
+                                            <GradientStop Color="#CC0000" Offset="1"/>
+                                        </RadialGradientBrush>
+                                    </Ellipse.Fill>
+                                    <Ellipse.Effect>
+                                        <DropShadowEffect Color="#FF0000" BlurRadius="12" ShadowDepth="0"/>
+                                    </Ellipse.Effect>
+                                </Ellipse>
+                                <Button x:Name="BtnCup3" Style="{StaticResource CupButtonStyle}"
+                                        Tag="3" Click="BtnCup_Click"
+                                        Panel.ZIndex="1" IsEnabled="False"/>
+                            </StackPanel>
+
+                        </Canvas>
+                    </Grid>
+
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ===== FOOTER CU MIZA ===== -->
+        <Border Grid.Row="2" Background="#0A0A0A" BorderBrush="#FFD700" BorderThickness="0,1,0,0">
+            <Grid Margin="30,0">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                    <TextBlock Text="MIZĂ (RON)" Foreground="#777" FontSize="13"
+                               FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,15,0"/>
+                    <Button Content="−" Style="{StaticResource RoundBetButton}" Click="BtnLowerBet_Click"/>
+
+                    <Border Background="#141414" BorderBrush="#333" BorderThickness="1"
+                            CornerRadius="10" Width="130" Height="50" Margin="10,0">
+                        <TextBox x:Name="TxtBet" Text="10.00" FontSize="22"
+                                 TextAlignment="Center" FontWeight="Black"
+                                 Background="Transparent" Foreground="White"
+                                 BorderThickness="0" VerticalContentAlignment="Center"
+                                 FontFamily="Segoe UI"/>
+                    </Border>
+
+                    <Button Content="+" Style="{StaticResource RoundBetButton}" Click="BtnHigherBet_Click"/>
+                </StackPanel>
+
+                <Button x:Name="BtnStart" Content="▶ AMESTECĂ"
+                        Height="60" Width="220"
+                        HorizontalAlignment="Right"
+                        Background="#FFD700" Foreground="Black"
+                        FontSize="20" FontWeight="Black"
+                        Click="BtnStart_Click"
+                        BorderThickness="0" Cursor="Hand"
+                        FontFamily="Segoe UI">
+                    <Button.Effect>
+                        <DropShadowEffect Color="#FFD700" BlurRadius="15" ShadowDepth="0" Opacity="0.5"/>
+                    </Button.Effect>
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="30"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+            </Grid>
+        </Border>
+
+    </Grid>
 </Window>

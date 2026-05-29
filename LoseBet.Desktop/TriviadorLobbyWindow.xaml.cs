@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace LoseBet.Desktop
@@ -12,23 +13,72 @@ namespace LoseBet.Desktop
         {
             InitializeComponent();
             _username = username;
-            decimal.TryParse(balance, out _balance);
-            TxtBalance.Text = $"Sold: {_balance:0.00} RON";
+
+            if (decimal.TryParse(balance, out decimal parsedBalance))
+            {
+                _balance = parsedBalance;
+            }
+
+            TxtBalance.Text = $"{_balance:0.00} RON";
         }
 
-        private void BtnStartGame_Click(object sender, RoutedEventArgs e)
+        // ==========================================
+        // BUTOANE QUICK BET SI ADJUSTARI MIZA
+        // ==========================================
+        private void QuickBet_Click(object sender, RoutedEventArgs e)
         {
-            // Extragem miza selectată
-            string selectedBetStr = (CmbBetAmount.SelectedItem as ComboBoxItem).Content.ToString();
-            decimal betAmount = decimal.Parse(selectedBetStr);
+            var tag = (sender as Button)?.Tag?.ToString();
+            if (tag == null) return;
 
-            if (betAmount > _balance)
+            if (tag == "max")
             {
-                MessageBox.Show("Fonduri insuficiente pentru această miză!", "Eroare", MessageBoxButton.OK, MessageBoxImage.Error);
+                TxtBet.Text = _balance.ToString("F2");
                 return;
             }
 
-            // Extragem numărul de boți
+            if (decimal.TryParse(TxtBet.Text, out decimal cur) &&
+                decimal.TryParse(tag, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out decimal factor))
+            {
+                decimal nv = Math.Round(cur * factor, 2);
+                TxtBet.Text = (nv < 1 ? 1 : nv).ToString("F2");
+            }
+        }
+
+        private void BtnLowerBet_Click(object sender, RoutedEventArgs e)
+        {
+            if (decimal.TryParse(TxtBet.Text, out decimal val) && val > 1)
+            {
+                TxtBet.Text = (val - 1).ToString("F2");
+            }
+        }
+
+        private void BtnHigherBet_Click(object sender, RoutedEventArgs e)
+        {
+            if (decimal.TryParse(TxtBet.Text, out decimal val))
+            {
+                TxtBet.Text = (val + 1).ToString("F2");
+            }
+        }
+
+        // ==========================================
+        // LANSĂM JOCUL
+        // ==========================================
+        private void BtnStartGame_Click(object sender, RoutedEventArgs e)
+        {
+            // Extragem miza din noul TextBox
+            if (!decimal.TryParse(TxtBet.Text, out decimal betAmount) || betAmount <= 0)
+            {
+                MessageBox.Show("Introdu o miză validă!", "Eroare Miza", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            if (betAmount > _balance)
+            {
+                MessageBox.Show("Fonduri insuficiente pentru această miză!", "Eroare Fonduri", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            // Extragem numărul de boți din noile RadioButtons
             int botCount = 1;
             if (Rb2Bots.IsChecked == true) botCount = 2;
             else if (Rb5Bots.IsChecked == true) botCount = 5;
@@ -37,22 +87,25 @@ namespace LoseBet.Desktop
             if (ChkSport.IsChecked == false && ChkGeo.IsChecked == false && ChkIstorie.IsChecked == false &&
                 ChkArta.IsChecked == false && ChkPoeti.IsChecked == false && ChkStiinta.IsChecked == false && ChkDiverse.IsChecked == false)
             {
-                MessageBox.Show("Te rog să alegi cel puțin o categorie de întrebări!", "Atenție", MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Te rog să alegi cel puțin o categorie de întrebări!", "Atenție Categorii", MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             // Scădem banii pentru intrarea în meci
             _balance -= betAmount;
 
-            // LANSĂM JOCUL PROPRIU-ZIS ȘI ÎI TRIMITEM TOATE DATELE!
+            // LANSĂM JOCUL PROPRIU-ZIS ȘI ÎI TRIMITEM TOATE DATELE
             TriviadorGameWindow gameWindow = new TriviadorGameWindow(_username, _balance, betAmount, botCount);
             gameWindow.Show();
             this.Close();
         }
 
+        // ==========================================
+        // INAPOI LA DASHBOARD
+        // ==========================================
         private void BtnBack_Click(object sender, RoutedEventArgs e)
         {
-            DashboardWindow dashboard = new DashboardWindow(_username, _balance.ToString());
+            DashboardWindow dashboard = new DashboardWindow(_username, _balance.ToString("F2"));
             dashboard.Show();
             this.Close();
         }

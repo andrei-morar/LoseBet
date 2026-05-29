@@ -17,7 +17,6 @@ namespace LoseBet.Desktop
         private readonly string _adminUsername;
         private static readonly HttpClient _httpClient = new HttpClient { BaseAddress = new Uri("https://localhost:7000/") };
 
-        // Acum folosim lista de simboluri configurate cu multiplicatori!
         private List<SymbolConfigDTO> _configuredSymbols = new List<SymbolConfigDTO>();
         private int? _selectedSlotId = null;
 
@@ -29,28 +28,30 @@ namespace LoseBet.Desktop
             _ = LoadSlotsAsync();
         }
 
+        // ==========================================
+        // TAB 1: USERS
+        // ==========================================
         private async Task LoadUsersAsync()
         {
-            var res = await _httpClient.GetAsync($"api/admin/users?adminUsername={_adminUsername}");
-            if (res.IsSuccessStatusCode) UsersGrid.ItemsSource = await res.Content.ReadFromJsonAsync<List<UserDto>>();
-        }
-
-        private async Task LoadSlotsAsync()
-        {
-            var res = await _httpClient.GetAsync("api/slots/active");
-            if (res.IsSuccessStatusCode)
+            try
             {
-                SlotsGrid.ItemsSource = await res.Content.ReadFromJsonAsync<List<SlotGame>>();
+                var res = await _httpClient.GetAsync($"api/admin/users?adminUsername={_adminUsername}");
+                if (res.IsSuccessStatusCode)
+                    UsersGrid.ItemsSource = await res.Content.ReadFromJsonAsync<List<UserDto>>();
             }
+            catch { /* Silent Catch */ }
         }
 
-        // --- GESTIUNE USERS ---
         private async void BtnToggleBan_Click(object sender, RoutedEventArgs e)
         {
             if (UsersGrid.SelectedItem is UserDto u)
             {
-                await _httpClient.PostAsJsonAsync("api/admin/toggle-ban", new { AdminUsername = _adminUsername, TargetUsername = u.Username });
-                await LoadUsersAsync();
+                try
+                {
+                    await _httpClient.PostAsJsonAsync("api/admin/toggle-ban", new { AdminUsername = _adminUsername, TargetUsername = u.Username });
+                    await LoadUsersAsync();
+                }
+                catch { MessageBox.Show("Eroare de conexiune la server."); }
             }
         }
 
@@ -58,8 +59,12 @@ namespace LoseBet.Desktop
         {
             if (UsersGrid.SelectedItem is UserDto u && CmbRoles.SelectedItem is ComboBoxItem i)
             {
-                await _httpClient.PostAsJsonAsync("api/admin/update-role", new { AdminUsername = _adminUsername, TargetUsername = u.Username, NewRole = i.Content.ToString() });
-                await LoadUsersAsync();
+                try
+                {
+                    await _httpClient.PostAsJsonAsync("api/admin/update-role", new { AdminUsername = _adminUsername, TargetUsername = u.Username, NewRole = i.Content.ToString() });
+                    await LoadUsersAsync();
+                }
+                catch { MessageBox.Show("Eroare de conexiune la server."); }
             }
         }
 
@@ -67,14 +72,38 @@ namespace LoseBet.Desktop
         {
             if (UsersGrid.SelectedItem is UserDto u && decimal.TryParse(TxtAmount.Text, out decimal amt))
             {
-                await _httpClient.PostAsJsonAsync("api/admin/update-balance", new { AdminUsername = _adminUsername, TargetUsername = u.Username, NewBalance = amt });
-                await LoadUsersAsync();
+                try
+                {
+                    await _httpClient.PostAsJsonAsync("api/admin/update-balance", new { AdminUsername = _adminUsername, TargetUsername = u.Username, NewBalance = amt });
+                    await LoadUsersAsync();
+                    TxtAmount.Clear();
+                }
+                catch { MessageBox.Show("Eroare de conexiune la server."); }
+            }
+            else
+            {
+                MessageBox.Show("Introdu o sumă validă!");
             }
         }
 
         private void BtnRefresh_Click(object sender, RoutedEventArgs e) => _ = LoadUsersAsync();
 
-        // --- GESTIUNE SLOTS ---
+        // ==========================================
+        // TAB 2: SLOT MANAGER
+        // ==========================================
+        private async Task LoadSlotsAsync()
+        {
+            try
+            {
+                var res = await _httpClient.GetAsync("api/slots/active");
+                if (res.IsSuccessStatusCode)
+                {
+                    SlotsGrid.ItemsSource = await res.Content.ReadFromJsonAsync<List<SlotGame>>();
+                }
+            }
+            catch { /* Silent Catch */ }
+        }
+
         private void SlotsGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var grid = sender as DataGrid;
@@ -88,10 +117,8 @@ namespace LoseBet.Desktop
                 TxtSlotCols.Text = s.Columns.ToString();
                 TxtSlotPaylines.Text = s.Paylines.ToString();
 
-                // Curățăm lista curentă
                 _configuredSymbols.Clear();
 
-                // Dacă jocul selectat are simboluri din baza de date, le încărcăm vizual!
                 if (s.Symbols != null)
                 {
                     foreach (var sym in s.Symbols)
@@ -107,14 +134,13 @@ namespace LoseBet.Desktop
                     }
                 }
 
-                // Dăm refresh la ListBox ca să apară pe ecran
                 LstConfiguredSymbols.ItemsSource = null;
                 LstConfiguredSymbols.ItemsSource = _configuredSymbols;
 
                 BtnUploadSymbols.Content = $"📁 Adăugă Simbol Nou ({_configuredSymbols.Count})";
                 BtnUploadSymbols.Background = _configuredSymbols.Count > 0
                     ? System.Windows.Media.Brushes.MediumSeaGreen
-                    : new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#444"));
+                    : new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#2A2B35"));
             }
         }
 
@@ -122,13 +148,17 @@ namespace LoseBet.Desktop
         {
             if (_selectedSlotId != null)
             {
-                await _httpClient.DeleteAsync($"api/slots/delete/{_selectedSlotId}");
-                await LoadSlotsAsync();
-                BtnNewMode_Click(null, null);
+                try
+                {
+                    await _httpClient.DeleteAsync($"api/slots/delete/{_selectedSlotId}");
+                    await LoadSlotsAsync();
+                    BtnNewMode_Click(null, null);
+                }
+                catch { MessageBox.Show("Eroare de conexiune."); }
             }
         }
 
-        private void BtnNewMode_Click(object sender, RoutedEventArgs e)
+        private void BtnNewMode_Click(object? sender, RoutedEventArgs? e)
         {
             _selectedSlotId = null;
             TxtSlotName.Text = "";
@@ -136,12 +166,10 @@ namespace LoseBet.Desktop
             TxtSlotColor.Text = "#1E1E1E";
 
             _configuredSymbols.Clear();
-            LstConfiguredSymbols.ItemsSource = null; // <-- ADAUGĂ LINIA ASTA
+            LstConfiguredSymbols.ItemsSource = null;
 
             BtnUploadSymbols.Content = "➕ Adaugă Simbol Nou";
-            BtnUploadSymbols.Background = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#444"));
-
-            MessageBox.Show("Mod creare joc nou activat. Poți adăuga un joc de la zero.");
+            BtnUploadSymbols.Background = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#2A2B35"));
         }
 
         private void BtnUploadPhoto_Click(object sender, RoutedEventArgs e)
@@ -159,7 +187,6 @@ namespace LoseBet.Desktop
             {
                 _configuredSymbols.Add(symWindow.ConfiguredSymbol);
 
-                // Sincronizăm lista vizuală din interfață
                 LstConfiguredSymbols.ItemsSource = null;
                 LstConfiguredSymbols.ItemsSource = _configuredSymbols;
 
@@ -177,7 +204,6 @@ namespace LoseBet.Desktop
             {
                 _configuredSymbols.Remove(symbolToRemove);
 
-                // Refresh la listă
                 LstConfiguredSymbols.ItemsSource = null;
                 LstConfiguredSymbols.ItemsSource = _configuredSymbols;
 
@@ -187,7 +213,7 @@ namespace LoseBet.Desktop
 
                 if (_configuredSymbols.Count == 0)
                 {
-                    BtnUploadSymbols.Background = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#444"));
+                    BtnUploadSymbols.Background = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#2A2B35"));
                 }
             }
         }
@@ -200,33 +226,36 @@ namespace LoseBet.Desktop
                 return;
             }
 
-            var data = new
+            try
             {
-                Name = TxtSlotName.Text,
-                ThumbnailUrl = TxtSlotThumb.Text,
-                ThemeColor = TxtSlotColor.Text,
-                Rows = int.Parse(TxtSlotRows.Text),
-                Columns = int.Parse(TxtSlotCols.Text),
-                Paylines = int.Parse(TxtSlotPaylines.Text),
-                WildType = ((ComboBoxItem)CmbWildType.SelectedItem).Content.ToString(),
-                Symbols = _configuredSymbols // Trimitem simbolurile complexe!
-            };
+                var data = new
+                {
+                    Name = TxtSlotName.Text,
+                    ThumbnailUrl = TxtSlotThumb.Text,
+                    ThemeColor = TxtSlotColor.Text,
+                    Rows = int.Parse(TxtSlotRows.Text),
+                    Columns = int.Parse(TxtSlotCols.Text),
+                    Paylines = int.Parse(TxtSlotPaylines.Text),
+                    WildType = ((ComboBoxItem)CmbWildType.SelectedItem).Content.ToString(),
+                    Symbols = _configuredSymbols
+                };
 
-            if (_selectedSlotId == null)
-            {
-                await _httpClient.PostAsJsonAsync("api/slots/add", data);
+                if (_selectedSlotId == null)
+                    await _httpClient.PostAsJsonAsync("api/slots/add", data);
+                else
+                    await _httpClient.PutAsJsonAsync($"api/slots/update/{_selectedSlotId}", data);
+
+                await LoadSlotsAsync();
+                BtnNewMode_Click(null, null);
+                BtnUploadSymbols.Content = "📁 Încarcă Simboluri (Multi)";
+                BtnUploadSymbols.Background = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#2A2B35"));
+
+                MessageBox.Show("Jocul a fost salvat cu succes în baza de date!", "Succes");
             }
-            else
+            catch (Exception ex)
             {
-                await _httpClient.PutAsJsonAsync($"api/slots/update/{_selectedSlotId}", data);
+                MessageBox.Show("A apărut o eroare la salvarea slotului: " + ex.Message);
             }
-
-            await LoadSlotsAsync();
-            BtnNewMode_Click(null, null);
-            BtnUploadSymbols.Content = "📁 Încarcă Simboluri (Multi)";
-            BtnUploadSymbols.Background = new System.Windows.Media.SolidColorBrush((System.Windows.Media.Color)System.Windows.Media.ColorConverter.ConvertFromString("#444"));
-
-            MessageBox.Show("Jocul a fost salvat cu succes în baza de date!");
         }
 
         private string CopyToResources(string src)
@@ -239,9 +268,8 @@ namespace LoseBet.Desktop
         }
 
         // ==========================================
-        // MODULUL DE PARIURI SPORTIVE
+        // TAB 3: PARIURI SPORTIVE
         // ==========================================
-
         private async Task LoadMatchesAsync()
         {
             try
@@ -252,10 +280,7 @@ namespace LoseBet.Desktop
                     MatchesGrid.ItemsSource = await res.Content.ReadFromJsonAsync<List<SportsMatch>>();
                 }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Eroare la aducerea meciurilor: " + ex.Message);
-            }
+            catch { /* Silent Catch */ }
         }
 
         private async void BtnAddMatch_Click(object sender, RoutedEventArgs e)
@@ -266,33 +291,37 @@ namespace LoseBet.Desktop
                 return;
             }
 
-            var data = new
+            try
             {
-                HomeTeam = TxtHomeTeam.Text,
-                AwayTeam = TxtAwayTeam.Text,
-                Odds1 = decimal.Parse(TxtOdds1.Text),
-                OddsX = decimal.Parse(TxtOddsX.Text),
-                Odds2 = decimal.Parse(TxtOdds2.Text)
-            };
+                var data = new
+                {
+                    HomeTeam = TxtHomeTeam.Text,
+                    AwayTeam = TxtAwayTeam.Text,
+                    Odds1 = decimal.Parse(TxtOdds1.Text),
+                    OddsX = decimal.Parse(TxtOddsX.Text),
+                    Odds2 = decimal.Parse(TxtOdds2.Text)
+                };
 
-            var res = await _httpClient.PostAsJsonAsync("api/sports/admin/add-match", data);
+                var res = await _httpClient.PostAsJsonAsync("api/sports/admin/add-match", data);
 
-            if (res.IsSuccessStatusCode)
+                if (res.IsSuccessStatusCode)
+                {
+                    MessageBox.Show("Meciul a fost adăugat în oferta casei de pariuri!", "Succes");
+                    TxtHomeTeam.Text = "";
+                    TxtAwayTeam.Text = "";
+                    TxtOdds1.Text = "1.00";
+                    TxtOddsX.Text = "1.00";
+                    TxtOdds2.Text = "1.00";
+                    await LoadMatchesAsync();
+                }
+            }
+            catch (Exception ex)
             {
-                MessageBox.Show("Meciul a fost adăugat în oferta casei de pariuri!");
-                TxtHomeTeam.Text = "";
-                TxtAwayTeam.Text = "";
-                TxtOdds1.Text = "1.00";
-                TxtOddsX.Text = "1.00";
-                TxtOdds2.Text = "1.00";
-                await LoadMatchesAsync(); // Refresh la grilă
+                MessageBox.Show("Eroare adăugare meci: " + ex.Message);
             }
         }
 
-        private void BtnRefreshMatches_Click(object sender, RoutedEventArgs e)
-        {
-            _ = LoadMatchesAsync();
-        }
+        private void BtnRefreshMatches_Click(object sender, RoutedEventArgs e) => _ = LoadMatchesAsync();
 
         private async void BtnSimulateMatch_Click(object sender, RoutedEventArgs e)
         {
@@ -308,11 +337,8 @@ namespace LoseBet.Desktop
 
                         if (res.IsSuccessStatusCode)
                         {
-                            // Citim mesajul (care conține scorul generat)
                             var responseData = await res.Content.ReadFromJsonAsync<SimulateResponseDTO>();
                             MessageBox.Show(responseData?.Message, "Fluier final!", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                            // Dăm refresh la grilă (meciul ar trebui să dispară pentru că acum e "Finished")
                             await LoadMatchesAsync();
                         }
                     }
@@ -327,31 +353,32 @@ namespace LoseBet.Desktop
                 MessageBox.Show("Te rog să selectezi un meci din tabel pentru a-l simula!");
             }
         }
-        // Ascunde sau arată variantele în funcție de tipul ales
+
+        // ==========================================
+        // TAB 4: TRIVIA
+        // ==========================================
         private void CmbTriviaType_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (PanelTriviaOptions == null) return; // Evităm crash-ul la încărcarea inițială
+            if (PanelTriviaOptions == null) return;
 
             var selected = (ComboBoxItem)CmbTriviaType.SelectedItem;
-            if (selected.Tag.ToString() == "1") // 1 = Aproximare
+            if (selected.Tag?.ToString() == "1") // Aproximare
             {
                 PanelTriviaOptions.Visibility = Visibility.Collapsed;
             }
-            else // 2 = Grilă
+            else // Grila
             {
                 PanelTriviaOptions.Visibility = Visibility.Visible;
             }
         }
 
-        // Adaugă întrebarea în baza de date
         private async void BtnAddTrivia_Click(object sender, RoutedEventArgs e)
         {
             var selectedType = (ComboBoxItem)CmbTriviaType.SelectedItem;
-            int type = int.Parse(selectedType.Tag.ToString());
+            int type = int.Parse(selectedType.Tag?.ToString() ?? "2");
 
             var newQuestion = new LoseBet.Core.Models.TriviaQuestion
             {
-                // Înlocuiește linia veche TxtTriviaCategory.Text.Trim() cu asta:
                 Category = (CmbTriviaCategory.SelectedItem as ComboBoxItem)?.Content.ToString() ?? "Diverse",
                 Text = TxtTriviaText.Text.Trim(),
                 Type = type,
@@ -374,7 +401,6 @@ namespace LoseBet.Desktop
                 if (response.IsSuccessStatusCode)
                 {
                     MessageBox.Show("Întrebare adăugată cu succes în baza de date!", "Succes");
-                    // Curățăm câmpurile
                     TxtTriviaText.Clear(); TxtTriviaCorrect.Clear();
                     TxtTriviaA.Clear(); TxtTriviaB.Clear(); TxtTriviaC.Clear(); TxtTriviaD.Clear();
                 }
@@ -389,7 +415,6 @@ namespace LoseBet.Desktop
             }
         }
 
-        // 1. Încărcare listă
         private async void BtnRefreshTrivia_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -400,24 +425,33 @@ namespace LoseBet.Desktop
             catch { MessageBox.Show("Eroare la încărcarea întrebărilor."); }
         }
 
-        // 2. Ștergere (trebuie să adaugi un endpoint în TriviaController pentru asta)
         private async void BtnDeleteTrivia_Click(object sender, RoutedEventArgs e)
         {
-            var btn = sender as Button;
-            int id = (int)btn.Tag;
-            var response = await _httpClient.DeleteAsync($"api/trivia/delete/{id}");
-            if (response.IsSuccessStatusCode)
+            if (sender is Button btn && btn.Tag != null)
             {
-                BtnRefreshTrivia_Click(null, null); // Refresh automat
+                int id = (int)btn.Tag;
+                try
+                {
+                    var response = await _httpClient.DeleteAsync($"api/trivia/delete/{id}");
+                    if (response.IsSuccessStatusCode)
+                    {
+                        BtnRefreshTrivia_Click(null!, null!);
+                    }
+                }
+                catch { MessageBox.Show("Eroare la ștergere."); }
             }
         }
-
     }
 
-    // Clasă mică pentru a citi răspunsul de la simulare
     public class SimulateResponseDTO
     {
-        public string Message { get; set; }
+        public string? Message { get; set; }
     }
-    public class UserDto { public string Username { get; set; } = ""; public decimal Balance { get; set; } public string Role { get; set; } = ""; }
+
+    public class UserDto
+    {
+        public string Username { get; set; } = "";
+        public decimal Balance { get; set; }
+        public string Role { get; set; } = "";
+    }
 }

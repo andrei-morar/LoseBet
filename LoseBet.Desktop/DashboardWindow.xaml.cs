@@ -1,31 +1,30 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
+using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Media;
+using System.Windows.Controls;
 
 namespace LoseBet.Desktop
 {
     public partial class DashboardWindow : Window
     {
-        // MAGIC TRICK: Facem variabila statică. Astfel, ține minte numele tău 
-        // chiar dacă se închide și se redeschide fereastra de 100 de ori!
         private static string _savedUsername = "";
+
+        // Câți pixeli sare banda glisantă la un click
+        private const double SCROLL_STEP = 200.0;
 
         public DashboardWindow(string username, string balance)
         {
             InitializeComponent();
 
-            // Dacă primește un nume real, îl salvăm. Dacă primește "", îl folosește pe cel salvat anterior.
             if (!string.IsNullOrEmpty(username))
             {
                 _savedUsername = username;
             }
 
             TxtWelcome.Text = $"Salut, {_savedUsername}!";
-
-            // AICI AM REZOLVAT BUG-UL: Ignorăm parametrul 'balance' și aducem banii reali instant!
             RefreshDashboardBalance();
 
-            // Verificăm rolul
             if (UserSession.Role != null && UserSession.Role.Trim().ToLower() == "admin")
             {
                 BtnAdminPanel.Visibility = Visibility.Visible;
@@ -35,18 +34,111 @@ namespace LoseBet.Desktop
                 BtnAdminPanel.Visibility = Visibility.Collapsed;
             }
 
-            // Ne asigurăm că ascultă corect megafonul când se schimbă banii din alte jocuri
             GameService.BalanceUpdated -= RefreshDashboardBalance;
             GameService.BalanceUpdated += RefreshDashboardBalance;
         }
 
         private async void RefreshDashboardBalance()
         {
-            // Aducem din nou balanța direct de la server
-            decimal freshBalance = await GameService.GetBalanceAsync();
+            try
+            {
+                decimal freshBalance = await GameService.GetBalanceAsync();
+                TxtBalance.Text = $"Sold: {freshBalance:F2} RON";
+            }
+            catch (Exception) // Am scos 'ex' ca să dispară warning-ul
+            {
+                // Eroare ignorată silențios dacă pică serverul momentan
+            }
+        }
 
-            // Adăugăm înapoi textul "Sold: " ca să arate frumos și să nu strice alte butoane
-            TxtBalance.Text = $"Sold: {freshBalance:F2} RON";
+        // ============================
+        // ANIMAȚIE GLISARE (SLIDER) - METODELE CARE LIPSEAU
+        // ============================
+
+        private async void AnimateScroll(ScrollViewer viewer, double offsetChange)
+        {
+            double targetOffset = viewer.HorizontalOffset + offsetChange;
+            double step = offsetChange / 10.0; // Împărțim animația în 10 cadre (frames)
+
+            for (int i = 0; i < 10; i++)
+            {
+                viewer.ScrollToHorizontalOffset(viewer.HorizontalOffset + step);
+                await Task.Delay(15); // Așteaptă 15 milisecunde pt finețe
+            }
+        }
+
+        private void BtnScrollEduLeft_Click(object sender, RoutedEventArgs e)
+        {
+            AnimateScroll(ScrollEdu, -SCROLL_STEP);
+        }
+
+        private void BtnScrollEduRight_Click(object sender, RoutedEventArgs e)
+        {
+            AnimateScroll(ScrollEdu, SCROLL_STEP);
+        }
+
+        private void BtnScrollCasinoLeft_Click(object sender, RoutedEventArgs e)
+        {
+            AnimateScroll(ScrollCasino, -SCROLL_STEP);
+        }
+
+        private void BtnScrollCasinoRight_Click(object sender, RoutedEventArgs e)
+        {
+            AnimateScroll(ScrollCasino, SCROLL_STEP);
+        }
+
+
+        // ============================
+        // LOGICA PENTRU MENIUL LATERAL
+        // ============================
+
+        private void BtnMenuHome_Click(object sender, RoutedEventArgs e)
+        {
+            PromoBanner.Visibility = Visibility.Visible;
+            PanelEdu.Visibility = Visibility.Visible;
+            PanelCasino.Visibility = Visibility.Visible;
+        }
+
+        private void BtnMenuEdu_Click(object sender, RoutedEventArgs e)
+        {
+            PromoBanner.Visibility = Visibility.Collapsed;
+            PanelEdu.Visibility = Visibility.Visible;
+            PanelCasino.Visibility = Visibility.Collapsed;
+        }
+
+        private void BtnMenuCasino_Click(object sender, RoutedEventArgs e)
+        {
+            PromoBanner.Visibility = Visibility.Collapsed;
+            PanelEdu.Visibility = Visibility.Collapsed;
+            PanelCasino.Visibility = Visibility.Visible;
+        }
+
+        private void BtnMenuLive_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Secțiunea Live Casino va fi disponibilă în curând!", "În dezvoltare");
+        }
+
+        private void BtnMenuSports_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Secțiunea Pariuri Sportive va fi disponibilă în curând!", "În dezvoltare");
+        }
+
+        // ============================
+        // BARA DE SUS (HEADER)
+        // ============================
+
+        private void BtnWallet_Click(object sender, RoutedEventArgs e)
+        {
+            string rawBalance = TxtBalance.Text.Replace("Sold: ", "").Replace(" RON", "");
+            WalletWindow wallet = new WalletWindow(_savedUsername, rawBalance);
+            wallet.Show();
+            this.Close();
+        }
+
+        private void BtnAdminPanel_Click(object sender, RoutedEventArgs e)
+        {
+            AdminWindow adminWindow = new AdminWindow(_savedUsername);
+            adminWindow.Show();
         }
 
         private void BtnLogout_Click(object sender, RoutedEventArgs e)
@@ -56,19 +148,19 @@ namespace LoseBet.Desktop
             this.Close();
         }
 
+        // ============================
+        // DESCHIDERE JOCURI
+        // ============================
+
         private void BtnSlots_Click(object sender, RoutedEventArgs e)
         {
-            SlotsLobbyWindow slotsLobby = new SlotsLobbyWindow();
-            slotsLobby.Show();
-            this.Close();
-        }
-
-        private void BtnWallet_Click(object sender, RoutedEventArgs e)
-        {
-            string rawBalance = TxtBalance.Text.Replace("Sold: ", "").Replace(" RON", "");
-            WalletWindow wallet = new WalletWindow(_savedUsername, rawBalance);
-            wallet.Show();
-            this.Close();
+            try
+            {
+                SlotsLobbyWindow slotsLobby = new SlotsLobbyWindow();
+                slotsLobby.Show();
+                this.Close();
+            }
+            catch (Exception) { } // Fără 'ex'
         }
 
         private void BtnRoulette_Click(object sender, RoutedEventArgs e)
@@ -95,9 +187,6 @@ namespace LoseBet.Desktop
             this.Close();
         }
 
-        // ============================
-        // BUTONUL NOU: ALBA-NEAGRA
-        // ============================
         private void BtnAlbaNeagra_Click(object sender, RoutedEventArgs e)
         {
             AlbaNeagraWindow albaNeagra = new AlbaNeagraWindow();
@@ -124,35 +213,6 @@ namespace LoseBet.Desktop
             this.Close();
         }
 
-        private void BtnAdminPanel_Click(object sender, RoutedEventArgs e)
-        {
-            AdminWindow adminWindow = new AdminWindow(_savedUsername);
-            adminWindow.Show();
-        }
-
-      
-        // --- LOGICĂ PENTRU MENIU CATEGORII ---
-        private void BtnCategoryEdu_Click(object sender, RoutedEventArgs e)
-        {
-            PanelEdu.Visibility = Visibility.Visible;
-            PanelCasino.Visibility = Visibility.Collapsed;
-
-            // Schimbăm culorile să arate care tab este activ
-            BtnCategoryEdu.Background = (SolidColorBrush)new BrushConverter().ConvertFrom("#3498DB"); // Albastru
-            BtnCategoryCasino.Background = (SolidColorBrush)new BrushConverter().ConvertFrom("#7F8C8D"); // Gri
-        }
-
-        private void BtnCategoryCasino_Click(object sender, RoutedEventArgs e)
-        {
-            PanelEdu.Visibility = Visibility.Collapsed;
-            PanelCasino.Visibility = Visibility.Visible;
-
-            // Schimbăm culorile
-            BtnCategoryEdu.Background = (SolidColorBrush)new BrushConverter().ConvertFrom("#7F8C8D"); // Gri
-            BtnCategoryCasino.Background = (SolidColorBrush)new BrushConverter().ConvertFrom("#E74C3C"); // Roșu Casino
-        }
-
-        // --- BUTOANE JOCURI NOI EDUCATIVE ---
         private void BtnWordle_Click(object sender, RoutedEventArgs e)
         {
             WordleWindow wordleGame = new WordleWindow();

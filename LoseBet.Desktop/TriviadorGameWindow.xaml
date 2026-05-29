@@ -1,64 +1,146 @@
 ﻿<Window x:Class="LoseBet.Desktop.TriviadorGameWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="LoseBet - Triviador Arena" Height="700" Width="1100" WindowStartupLocation="CenterScreen" Background="#2C3E50" WindowState="Maximized">
+        Title="LoseBet - Triviador Arena" Height="750" Width="1200" 
+        WindowStartupLocation="CenterScreen" Background="#0A0A0C" WindowState="Maximized">
 
-    <Grid Margin="10">
+    <Window.Resources>
+        <DropShadowEffect x:Key="NeonGlow" Color="#FFD700" BlurRadius="15" ShadowDepth="0" Opacity="0.5"/>
+        <DropShadowEffect x:Key="RedGlow" Color="#E53935" BlurRadius="15" ShadowDepth="0" Opacity="0.6"/>
+        <DropShadowEffect x:Key="BlueGlow" Color="#2979FF" BlurRadius="15" ShadowDepth="0" Opacity="0.6"/>
+
+        <Style TargetType="Button" x:Key="AnswerBtnStyle">
+            <Setter Property="Background" Value="#14151A"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="BorderBrush" Value="#2A2B35"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="BtnBorder" Background="{TemplateBinding Background}" CornerRadius="10" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="10"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="BtnBorder" Property="Background" Value="#1A1B22"/>
+                                <Setter TargetName="BtnBorder" Property="BorderBrush" Value="#2979FF"/>
+                                <Setter TargetName="BtnBorder" Property="Effect" Value="{StaticResource BlueGlow}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="65"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Margin="0,0,0,10">
-            <Button Content="🏳️ Abandon / Înapoi" Click="BtnBack_Click" Width="140" Height="30" HorizontalAlignment="Left" Background="#E74C3C" Foreground="White" FontWeight="Bold" BorderThickness="0" Cursor="Hand"/>
+        <Border Grid.Row="0" Background="#111115" BorderBrush="#222" BorderThickness="0,0,0,1">
+            <Grid Margin="15,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                <TextBlock x:Name="TxtPlayerScore" Text="TU: 0 pct | Teritorii: 0" Foreground="#3498DB" FontSize="18" FontWeight="Bold" Margin="0,0,20,0"/>
-                <TextBlock x:Name="TxtBotsScore" Text="BOȚI: 0 pct | Teritorii: 0" Foreground="#E74C3C" FontSize="18" FontWeight="Bold"/>
-            </StackPanel>
+                <Button Grid.Column="0" Content="🏳️ ABANDON" Width="120" Height="35" HorizontalAlignment="Left" Click="BtnBack_Click" Background="#B71C1C" Foreground="White" BorderThickness="0" Cursor="Hand" FontWeight="Bold">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="8"/>
+                        </Style>
+                    </Button.Resources>
+                    <Button.Effect>
+                        <DropShadowEffect Color="#E53935" BlurRadius="10" ShadowDepth="0" Opacity="0.5"/>
+                    </Button.Effect>
+                </Button>
 
-            <TextBlock x:Name="TxtMiza" Text="Miză: 100 RON" Foreground="Gold" FontSize="18" FontWeight="Bold" HorizontalAlignment="Right"/>
-        </Grid>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock x:Name="TxtPlayerScore" Text="TU: 0 pct | Teritorii: 0" Foreground="#2979FF" FontSize="18" FontWeight="Black" Margin="0,0,30,0" Effect="{StaticResource BlueGlow}"/>
+                    <TextBlock x:Name="TxtBotsScore" Text="BOȚI: 0 pct | Teritorii: 0" Foreground="#E53935" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
+                </StackPanel>
 
-        <Grid Grid.Row="1">
+                <TextBlock Grid.Column="2" x:Name="TxtMiza" Text="Miză: 100 RON" Foreground="#FFD700" FontSize="16" FontWeight="Black" VerticalAlignment="Center" Effect="{StaticResource NeonGlow}"/>
+            </Grid>
+        </Border>
+
+        <Grid Grid.Row="1" Margin="15">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="6*"/>
                 <ColumnDefinition Width="4*"/>
             </Grid.ColumnDefinitions>
 
-            <Border Grid.Column="0" Background="#34495E" CornerRadius="10" Padding="10" Margin="0,0,10,0">
+            <Border Grid.Column="0" Background="#14151A" CornerRadius="15" BorderBrush="#2A2B35" BorderThickness="2" Margin="0,0,10,0" ClipToBounds="True">
                 <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="*"/>
-                    </Grid.RowDefinitions>
+                    <Ellipse Width="600" Height="400" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.05">
+                        <Ellipse.Fill>
+                            <RadialGradientBrush>
+                                <GradientStop Color="#FFD700" Offset="0"/>
+                                <GradientStop Color="Transparent" Offset="1"/>
+                            </RadialGradientBrush>
+                        </Ellipse.Fill>
+                    </Ellipse>
 
-                    <TextBlock x:Name="TxtMapStatus" Text="FAZA 1: Alege-ți CAPITALA!" Foreground="Gold" FontSize="20" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
 
-                    <Viewbox Grid.Row="1" Stretch="Uniform" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10">
-                        <Canvas x:Name="MapCanvas" Width="612.36" Height="432.29" Background="#2C3E50">
-                        </Canvas>
-                    </Viewbox>
+                        <Border Background="#111115" BorderBrush="#2A2B35" BorderThickness="0,0,0,2" Padding="15">
+                            <TextBlock x:Name="TxtMapStatus" Text="FAZA 1: Alege-ți CAPITALA!" Foreground="#FFD700" FontSize="20" FontWeight="Black" HorizontalAlignment="Center"/>
+                        </Border>
+
+                        <Viewbox Grid.Row="1" Stretch="Uniform" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="20">
+                            <Canvas x:Name="MapCanvas" Width="612.36" Height="432.29" Background="Transparent"/>
+                        </Viewbox>
+                    </Grid>
                 </Grid>
             </Border>
 
-            <Border Grid.Column="1" Background="#ECF0F1" CornerRadius="10" Padding="15">
+            <Border Grid.Column="1" Background="#111115" CornerRadius="15" BorderBrush="#2A2B35" BorderThickness="2" Padding="20">
                 <StackPanel VerticalAlignment="Center">
-                    <TextBlock x:Name="TxtTimer" Text="⏳ 30" Foreground="#E74C3C" FontSize="40" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,10"/>
 
-                    <TextBlock x:Name="TxtQuestion" Text="Așteaptă începerea luptei..." Foreground="#2C3E50" FontSize="20" FontWeight="Bold" TextWrapping="Wrap" TextAlignment="Center" Margin="0,0,0,20"/>
+                    <TextBlock Text="TIMP RĂMAS" Foreground="#888" FontSize="12" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,5"/>
+                    <TextBlock x:Name="TxtTimer" Text="⏳ 30" Foreground="#E53935" FontSize="50" FontWeight="Black" HorizontalAlignment="Center" Margin="0,0,0,30">
+                        <TextBlock.Effect>
+                            <DropShadowEffect Color="#E53935" BlurRadius="15" ShadowDepth="0" Opacity="0.5"/>
+                        </TextBlock.Effect>
+                    </TextBlock>
 
-                    <UniformGrid x:Name="PanelMultipleChoice" Columns="2" Rows="2" Visibility="Collapsed" Height="150">
-                        <Button x:Name="BtnA" Content="A. Varianta 1" Click="BtnAnswer_Click" Margin="5" Background="#3498DB" Foreground="White" FontSize="16" FontWeight="Bold" Cursor="Hand"/>
-                        <Button x:Name="BtnB" Content="B. Varianta 2" Click="BtnAnswer_Click" Margin="5" Background="#3498DB" Foreground="White" FontSize="16" FontWeight="Bold" Cursor="Hand"/>
-                        <Button x:Name="BtnC" Content="C. Varianta 3" Click="BtnAnswer_Click" Margin="5" Background="#3498DB" Foreground="White" FontSize="16" FontWeight="Bold" Cursor="Hand"/>
-                        <Button x:Name="BtnD" Content="D. Varianta 4" Click="BtnAnswer_Click" Margin="5" Background="#3498DB" Foreground="White" FontSize="16" FontWeight="Bold" Cursor="Hand"/>
+                    <Border Background="#1A1B22" CornerRadius="10" BorderBrush="#FFD700" BorderThickness="1" Padding="20" Margin="0,0,0,30">
+                        <TextBlock x:Name="TxtQuestion" Text="Așteaptă începerea luptei..." Foreground="White" FontSize="22" FontWeight="Bold" TextWrapping="Wrap" TextAlignment="Center"/>
+                    </Border>
+
+                    <UniformGrid x:Name="PanelMultipleChoice" Columns="2" Rows="2" Visibility="Collapsed" Height="180">
+                        <Button x:Name="BtnA" Content="A. Varianta 1" Click="BtnAnswer_Click" Style="{StaticResource AnswerBtnStyle}"/>
+                        <Button x:Name="BtnB" Content="B. Varianta 2" Click="BtnAnswer_Click" Style="{StaticResource AnswerBtnStyle}"/>
+                        <Button x:Name="BtnC" Content="C. Varianta 3" Click="BtnAnswer_Click" Style="{StaticResource AnswerBtnStyle}"/>
+                        <Button x:Name="BtnD" Content="D. Varianta 4" Click="BtnAnswer_Click" Style="{StaticResource AnswerBtnStyle}"/>
                     </UniformGrid>
 
                     <StackPanel x:Name="PanelApproximation" Visibility="Collapsed" HorizontalAlignment="Center">
-                        <TextBlock Text="Introdu răspunsul tău exact:" FontSize="16" FontWeight="Bold" Foreground="#34495E" Margin="0,0,0,10"/>
-                        <TextBox x:Name="TxtAnswerInput" Width="200" Height="40" FontSize="20" TextAlignment="Center" VerticalContentAlignment="Center" Margin="0,0,0,10"/>
-                        <Button Content="TRIMITE RĂSPUNS" Click="BtnSubmitApproximation_Click" Width="200" Height="40" Background="#2ECC71" Foreground="White" FontSize="16" FontWeight="Bold" Cursor="Hand"/>
+                        <TextBlock Text="INTRODU RĂSPUNSUL TĂU EXACT:" FontSize="14" FontWeight="Bold" Foreground="#888" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                        <Border Background="#0A0A0C" CornerRadius="10" BorderBrush="#2979FF" BorderThickness="2" Padding="5" Margin="0,0,0,20">
+                            <TextBox x:Name="TxtAnswerInput" Width="250" Height="50" FontSize="26" FontWeight="Black" TextAlignment="Center" VerticalContentAlignment="Center" Background="Transparent" Foreground="White" BorderThickness="0"/>
+                        </Border>
+                        <Button Content="TRIMITE RĂSPUNS" Click="BtnSubmitApproximation_Click" Width="260" Height="55" Background="#1E7A34" Foreground="White" FontSize="18" FontWeight="Black" Cursor="Hand" BorderThickness="0">
+                            <Button.Resources>
+                                <Style TargetType="Border">
+                                    <Setter Property="CornerRadius" Value="10"/>
+                                </Style>
+                            </Button.Resources>
+                            <Button.Effect>
+                                <DropShadowEffect Color="#00E676" BlurRadius="15" ShadowDepth="0" Opacity="0.5"/>
+                            </Button.Effect>
+                        </Button>
                     </StackPanel>
 
                 </StackPanel>
