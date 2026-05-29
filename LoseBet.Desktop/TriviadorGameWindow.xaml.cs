@@ -12,11 +12,11 @@ namespace LoseBet.Desktop
 {
     public class TriviaQuestion
     {
-        public string Category { get; set; }
-        public string Text { get; set; }
+        public string? Category { get; set; }
+        public string? Text { get; set; }
         public int Type { get; set; } // 1 = Aproximare, 2 = Grilă cu 4 variante
-        public string[] Answers { get; set; }
-        public string CorrectAnswer { get; set; }
+        public string[]? Answers { get; set; }
+        public string? CorrectAnswer { get; set; }
     }
 
     public partial class TriviadorGameWindow : Window
@@ -31,23 +31,22 @@ namespace LoseBet.Desktop
         private int _playerTerritories = 0;
 
         private List<BotPlayer> _botsList = new List<BotPlayer>();
-        private DispatcherTimer _timer;
+        private DispatcherTimer _timer = new DispatcherTimer();
         private int _timeLeft;
-        private Button _targetedTerritory;
-        private TriviaQuestion _currentQuestion;
+        private Button? _targetedTerritory;
+        private TriviaQuestion? _currentQuestion;
         private Random _random = new Random();
 
         private Dictionary<string, List<string>> _hartăGranițe = new Dictionary<string, List<string>>();
-        private string[] _judete = { "AB", "AR", "AG", "BC", "BH", "BN", "BT", "BV", "BR", "BZ", "CS", "CL", "CJ", "CT", "CV", "DB", "DJ", "GL", "GR", "GJ", "HR", "HD", "IL", "IS", "IF", "MM", "MH", "MS", "NT", "OT", "PH", "SM", "SJ", "SB", "SV", "TR", "TM", "TL", "VS", "VL", "VN", "B" };
         private List<TriviaQuestion> _questionsDB = new List<TriviaQuestion>();
         private static readonly System.Net.Http.HttpClient _httpClient = new System.Net.Http.HttpClient { BaseAddress = new Uri("https://localhost:7000/") };
 
         private class BotPlayer
         {
-            public string Name { get; set; }
+            public string? Name { get; set; }
             public int Score { get; set; }
             public int Territories { get; set; }
-            public SolidColorBrush Color { get; set; }
+            public SolidColorBrush? Color { get; set; }
         }
 
         public TriviadorGameWindow(string username, decimal balance, decimal betAmount, int botCount)
@@ -64,7 +63,7 @@ namespace LoseBet.Desktop
             InitializeBots();
             this.Loaded += async (s, e) => await LoadQuestionsFromDbAsync();
             SetupTimer();
-            GenerateMap(); // AICI AM SCHIMBAT! Generăm harta vectorială
+            GenerateMap();
         }
 
         private void BuildBorders()
@@ -117,10 +116,9 @@ namespace LoseBet.Desktop
         {
             foreach (var child in MapCanvas.Children)
             {
-                Button btn = child as Button;
-                if (btn != null && btn.Tag.ToString() == ownerTag)
+                if (child is Button btn && btn.Tag?.ToString() == ownerTag)
                 {
-                    string ownedJudet = btn.Content.ToString().Split('\n')[0];
+                    string ownedJudet = btn.Content.ToString()!.Split('\n')[0];
                     if (_hartăGranițe.ContainsKey(ownedJudet) && _hartăGranițe[ownedJudet].Contains(targetJudet)) return true;
                 }
             }
@@ -147,7 +145,6 @@ namespace LoseBet.Desktop
                         };
                         _questionsDB.Add(localQ);
                     }
-                    // Le amestecăm
                     _questionsDB = _questionsDB.OrderBy(q => _random.Next()).ToList();
                 }
                 else
@@ -155,23 +152,22 @@ namespace LoseBet.Desktop
                     MessageBox.Show("Nu există întrebări în baza de date! Cere-i adminului să adauge.");
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                MessageBox.Show("Eroare la încărcarea întrebărilor: " + ex.Message);
+                // Silent catch
             }
         }
 
-        private TriviaQuestion GetNextQuestion()
+        private TriviaQuestion? GetNextQuestion()
         {
             if (_questionsDB.Count == 0) LoadQuestionsFromDbAsync().Wait();
+            if (_questionsDB.Count == 0) return null; // Safe fallback
+
             TriviaQuestion q = _questionsDB[0];
             _questionsDB.RemoveAt(0);
             return q;
         }
 
-        // ================= GENERAREA HĂRȚII VECTORIALE (SVG) =================
-        // ================= GENERAREA HĂRȚII VECTORIALE DIN FIȘIER SVG =================
-        // ================= GENERAREA HĂRȚII VECTORIALE DIN FIȘIER SVG =================
         private void GenerateMap()
         {
             MapCanvas.Children.Clear();
@@ -189,14 +185,15 @@ namespace LoseBet.Desktop
                 System.Xml.XmlDocument doc = new System.Xml.XmlDocument();
                 doc.Load(svgPath);
 
-                System.Xml.XmlNodeList paths = doc.GetElementsByTagName("path");
+                System.Xml.XmlNodeList? paths = doc.GetElementsByTagName("path");
+                if (paths == null) return;
 
                 foreach (System.Xml.XmlNode node in paths)
                 {
-                    if (node.Attributes["id"] != null && node.Attributes["d"] != null)
+                    if (node.Attributes?["id"] != null && node.Attributes?["d"] != null)
                     {
-                        string id = node.Attributes["id"].Value.Replace("RO-", "");
-                        string pathData = node.Attributes["d"].Value;
+                        string id = node.Attributes["id"]!.Value.Replace("RO-", "");
+                        string pathData = node.Attributes["d"]!.Value;
                         string fullName = node.Attributes["title"]?.Value ?? id;
 
                         if (_hartăGranițe.ContainsKey(id))
@@ -205,44 +202,40 @@ namespace LoseBet.Desktop
                             {
                                 Content = id,
                                 Tag = "Liber",
-                                Background = Brushes.LightGray,
-                                Foreground = Brushes.Black,
+                                // ================= ADAPTAT PENTRU DARK MODE =================
+                                Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#1A1B22")),
+                                Foreground = Brushes.White,
                                 FontWeight = FontWeights.Bold,
-                                FontSize = 11, // Un font curat și clar
+                                FontSize = 11,
                                 Cursor = System.Windows.Input.Cursors.Hand,
                                 ToolTip = fullName
                             };
 
-                            // Calculăm matematica pentru a afla centrul exact al județului!
                             Geometry geom = Geometry.Parse(pathData);
                             Rect bounds = geom.Bounds;
 
                             ControlTemplate template = new ControlTemplate(typeof(Button));
                             FrameworkElementFactory gridFactory = new FrameworkElementFactory(typeof(Grid));
 
-                            // 1. Desenăm Județul
                             FrameworkElementFactory pathFactory = new FrameworkElementFactory(typeof(System.Windows.Shapes.Path));
                             pathFactory.SetValue(System.Windows.Shapes.Path.DataProperty, geom);
                             pathFactory.SetValue(System.Windows.Shapes.Path.FillProperty, new TemplateBindingExtension(Button.BackgroundProperty));
-                            pathFactory.SetValue(System.Windows.Shapes.Path.StrokeProperty, Brushes.White);
-                            pathFactory.SetValue(System.Windows.Shapes.Path.StrokeThicknessProperty, 1.2);
+                            // Marginea fiecărui județ adaptată:
+                            pathFactory.SetValue(System.Windows.Shapes.Path.StrokeProperty, new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2A2B35")));
+                            pathFactory.SetValue(System.Windows.Shapes.Path.StrokeThicknessProperty, 1.5);
 
-                            // 2. Desenăm Textul
                             FrameworkElementFactory presenterFactory = new FrameworkElementFactory(typeof(ContentPresenter));
                             presenterFactory.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Left);
                             presenterFactory.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Top);
 
-                            // Calculăm poziția textului ca să fie pe centrul județului (scădem 10-15 pixeli ca să compensăm lățimea cuvântului)
                             double textOffsetX = bounds.Left + (bounds.Width / 2) - 12;
                             double textOffsetY = bounds.Top + (bounds.Height / 2) - 10;
 
-                            // Corecție minoră pentru București (B) și Ilfov (IF) ca să nu se încalece, fiind foarte mici
                             if (id == "B") { textOffsetX -= 8; textOffsetY += 5; }
                             if (id == "IF") { textOffsetX += 8; textOffsetY -= 8; }
 
                             presenterFactory.SetValue(ContentPresenter.MarginProperty, new Thickness(textOffsetX, textOffsetY, 0, 0));
 
-                            // Asamblăm piesele
                             gridFactory.AppendChild(pathFactory);
                             gridFactory.AppendChild(presenterFactory);
                             template.VisualTree = gridFactory;
@@ -255,20 +248,25 @@ namespace LoseBet.Desktop
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                MessageBox.Show("A apărut o eroare la desenarea hărții: " + ex.Message);
+                // Silent catch
             }
         }
 
         private void BtnTerritory_Click(object sender, RoutedEventArgs e)
         {
-            Button clickedBtn = sender as Button;
-            string judetNume = clickedBtn.Content.ToString().Split('\n')[0];
+            if (sender is not Button clickedBtn) return;
+            string judetNume = clickedBtn.Content.ToString()!.Split('\n')[0];
 
             if (_gamePhase == 0)
             {
-                clickedBtn.Background = Brushes.DodgerBlue; clickedBtn.Foreground = Brushes.White; clickedBtn.Tag = "Tu"; clickedBtn.Content = $"{judetNume}\n(👑)";
+                // Culoarea jucătorului (Blue Neon)
+                clickedBtn.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2979FF"));
+                clickedBtn.Foreground = Brushes.White;
+                clickedBtn.Tag = "Tu";
+                clickedBtn.Content = $"{judetNume}\n(👑)";
+
                 _playerTerritories++; _playerScore += 300;
                 PlaceBotCapitals();
                 _gamePhase = 1; TxtMapStatus.Text = "FAZA 2: Atacă județele vecine libere!";
@@ -276,7 +274,7 @@ namespace LoseBet.Desktop
             }
             else if (_gamePhase == 1)
             {
-                if (clickedBtn.Tag.ToString() == "Liber")
+                if (clickedBtn.Tag?.ToString() == "Liber")
                 {
                     if (IsAdjacent(judetNume, "Tu"))
                     {
@@ -292,10 +290,12 @@ namespace LoseBet.Desktop
         private void StartBattle()
         {
             _currentQuestion = GetNextQuestion();
+            if (_currentQuestion == null) return;
+
             TxtQuestion.Text = _currentQuestion.Text;
             MapCanvas.IsEnabled = false;
 
-            if (_currentQuestion.Type == 2)
+            if (_currentQuestion.Type == 2 && _currentQuestion.Answers != null)
             {
                 _timeLeft = 30;
                 PanelMultipleChoice.Visibility = Visibility.Visible;
@@ -319,11 +319,11 @@ namespace LoseBet.Desktop
         private void BtnAnswer_Click(object sender, RoutedEventArgs e)
         {
             _timer.Stop();
-            Button btn = sender as Button;
-            string selectedAnswer = btn.Content.ToString();
+            if (sender is not Button btn) return;
+            string selectedAnswer = btn.Content.ToString()!;
 
-            if (selectedAnswer == _currentQuestion.CorrectAnswer) EndBattle(true, "Răspuns Corect! Ai cucerit județul.");
-            else EndBattle(false, $"Răspuns Greșit! Cel corect era: {_currentQuestion.CorrectAnswer}");
+            if (selectedAnswer == _currentQuestion?.CorrectAnswer) EndBattle(true, "Răspuns Corect! Ai cucerit județul.");
+            else EndBattle(false, $"Răspuns Greșit! Cel corect era: {_currentQuestion?.CorrectAnswer}");
         }
 
         private void BtnSubmitApproximation_Click(object sender, RoutedEventArgs e)
@@ -335,8 +335,10 @@ namespace LoseBet.Desktop
 
         private void ProcessApproximationResult(int playerAnswer)
         {
+            if (_currentQuestion?.CorrectAnswer == null || _targetedTerritory == null) return;
+
             int correctAnswer = int.Parse(_currentQuestion.CorrectAnswer);
-            bool isNeutral = _targetedTerritory.Tag.ToString() == "Liber";
+            bool isNeutral = _targetedTerritory.Tag?.ToString() == "Liber";
 
             if (isNeutral)
             {
@@ -344,7 +346,7 @@ namespace LoseBet.Desktop
                 if (allowedMargin < 5) allowedMargin = 5;
 
                 int diff = Math.Abs(correctAnswer - playerAnswer);
-                if (diff <= allowedMargin) EndBattle(true, $"Cucerit! Răspunsul era {correctAnswer} (Aproximare perfectă!).");
+                if (diff <= allowedMargin) EndBattle(true, $"Cucerit! Răspunsul era {correctAnswer} (Aproximare acceptată).");
                 else EndBattle(false, $"Ai greșit! Răspunsul exact era {correctAnswer}.");
             }
         }
@@ -355,10 +357,12 @@ namespace LoseBet.Desktop
             PanelApproximation.Visibility = Visibility.Collapsed;
             MapCanvas.IsEnabled = true;
 
-            if (won)
+            if (won && _targetedTerritory != null)
             {
                 MessageBox.Show(message, "Victorie!");
-                _targetedTerritory.Background = Brushes.DodgerBlue; _targetedTerritory.Foreground = Brushes.White; _targetedTerritory.Tag = "Tu";
+                _targetedTerritory.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#2979FF"));
+                _targetedTerritory.Foreground = Brushes.White;
+                _targetedTerritory.Tag = "Tu";
                 _playerScore += 100; _playerTerritories++;
             }
             else MessageBox.Show(message, "Luptă pierdută! Teritoriul rămâne liber.");
@@ -371,7 +375,15 @@ namespace LoseBet.Desktop
 
         private void InitializeBots()
         {
-            SolidColorBrush[] botColors = { Brushes.Crimson, Brushes.ForestGreen, Brushes.Orange, Brushes.Purple, Brushes.Magenta };
+            // Culori neon pentru boți ca să se potrivească pe mapa dark
+            SolidColorBrush[] botColors = {
+                new SolidColorBrush((Color)ColorConverter.ConvertFromString("#E53935")), // Roșu
+                new SolidColorBrush((Color)ColorConverter.ConvertFromString("#00E676")), // Verde
+                new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FF9800")), // Portocaliu
+                new SolidColorBrush((Color)ColorConverter.ConvertFromString("#D500F9")), // Mov
+                new SolidColorBrush((Color)ColorConverter.ConvertFromString("#F50057"))  // Roz
+            };
+
             for (int i = 0; i < _botCount; i++) _botsList.Add(new BotPlayer { Name = $"Bot {i + 1}", Score = 0, Territories = 0, Color = botColors[i % botColors.Length] });
         }
 
@@ -383,8 +395,7 @@ namespace LoseBet.Desktop
                 while (!placed)
                 {
                     int index = _random.Next(0, MapCanvas.Children.Count);
-                    Button btn = MapCanvas.Children[index] as Button;
-                    if (btn.Tag.ToString() == "Liber")
+                    if (MapCanvas.Children[index] is Button btn && btn.Tag?.ToString() == "Liber")
                     {
                         btn.Background = bot.Color; btn.Foreground = Brushes.White; btn.Tag = bot.Name; btn.Content = $"{btn.Content}\n(🤖)";
                         bot.Territories++; bot.Score += 300; placed = true;
@@ -406,8 +417,8 @@ namespace LoseBet.Desktop
                 List<Button> validTargets = new List<Button>();
                 foreach (var child in MapCanvas.Children)
                 {
-                    Button b = child as Button;
-                    if (b.Tag.ToString() == "Liber" && IsAdjacent(b.Content.ToString().Split('\n')[0], bot.Name)) validTargets.Add(b);
+                    if (child is Button b && b.Tag?.ToString() == "Liber" && IsAdjacent(b.Content.ToString()!.Split('\n')[0], bot.Name!))
+                        validTargets.Add(b);
                 }
 
                 if (validTargets.Count > 0)
@@ -430,24 +441,24 @@ namespace LoseBet.Desktop
             _timer = new DispatcherTimer(); _timer.Interval = TimeSpan.FromSeconds(1); _timer.Tick += Timer_Tick;
         }
 
-        private void Timer_Tick(object sender, EventArgs e)
+        private void Timer_Tick(object? sender, EventArgs e)
         {
             _timeLeft--; TxtTimer.Text = $"⏳ {_timeLeft}";
             if (_timeLeft <= 0)
             {
                 _timer.Stop();
-                if (_currentQuestion.Type == 2) EndBattle(false, "Timpul a expirat! Ai pierdut.");
+                if (_currentQuestion?.Type == 2) EndBattle(false, "Timpul a expirat! Ai pierdut.");
                 else ProcessApproximationResult(0);
             }
         }
 
-        private bool HasFreeTerritories() { foreach (var child in MapCanvas.Children) { Button b = child as Button; if (b.Tag.ToString() == "Liber") return true; } return false; }
+        private bool HasFreeTerritories() { foreach (var child in MapCanvas.Children) { if (child is Button b && b.Tag?.ToString() == "Liber") return true; } return false; }
 
         private void UpdateScoreboard()
         {
-            TxtPlayerScore.Text = $"TU: {_playerScore} pct | Județe: {_playerTerritories}";
+            TxtPlayerScore.Text = $"TU: {_playerScore} pct | Teritorii: {_playerTerritories}";
             string botsInfo = "BOȚI: ";
-            foreach (var bot in _botsList) botsInfo += $"{bot.Name} ({bot.Score}p / {bot.Territories}J) | ";
+            foreach (var bot in _botsList) botsInfo += $"{bot.Name} ({bot.Score}p / {bot.Territories}t) | ";
             if (botsInfo.EndsWith(" | ")) botsInfo = botsInfo.Substring(0, botsInfo.Length - 3);
             TxtBotsScore.Text = botsInfo;
         }
