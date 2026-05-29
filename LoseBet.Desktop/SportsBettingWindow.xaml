@@ -1,62 +1,157 @@
 ﻿<Window x:Class="LoseBet.Desktop.SportsBettingWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Pariuri Sportive" Height="700" Width="1100" WindowStartupLocation="CenterScreen" Background="#121212">
+        Title="LoseBet - Pariuri Sportive" Height="800" Width="1200" 
+        WindowStartupLocation="CenterScreen" Background="#0A0A0C" ResizeMode="NoResize">
+
+    <Window.Resources>
+        <DropShadowEffect x:Key="NeonGlow" Color="#FFD700" BlurRadius="15" ShadowDepth="0" Opacity="0.5"/>
+        <DropShadowEffect x:Key="GreenGlow" Color="#00E676" BlurRadius="15" ShadowDepth="0" Opacity="0.5"/>
+        <DropShadowEffect x:Key="RedGlow" Color="#E53935" BlurRadius="15" ShadowDepth="0" Opacity="0.5"/>
+
+        <!-- Stil TabControl -->
+        <Style TargetType="TabItem">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TabItem">
+                        <Border x:Name="Border" Padding="20,10" Margin="0,0,5,0" Background="#111115" BorderBrush="#2A2B35" BorderThickness="1" CornerRadius="10,10,0,0" Cursor="Hand">
+                            <ContentPresenter x:Name="ContentSite" VerticalAlignment="Center" HorizontalAlignment="Center" ContentSource="Header" TextElement.FontWeight="Bold" TextElement.FontSize="14"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Border" Property="Background" Value="#1A1B22"/>
+                                <Setter TargetName="Border" Property="BorderBrush" Value="#FFD700"/>
+                                <Setter Property="Foreground" Value="#FFD700"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="False">
+                                <Setter Property="Foreground" Value="#888"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Stil Butoane Cote -->
+        <Style TargetType="Button" x:Key="OddBtnStyle">
+            <Setter Property="Background" Value="#1A1B22"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Black"/>
+            <Setter Property="BorderBrush" Value="#2A2B35"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Width" Value="60"/>
+            <Setter Property="Height" Value="40"/>
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="BtnBorder" Background="{TemplateBinding Background}" CornerRadius="8" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="BtnBorder" Property="Background" Value="#FFD700"/>
+                                <Setter Property="Foreground" Value="Black"/>
+                                <Setter TargetName="BtnBorder" Property="Effect" Value="{StaticResource NeonGlow}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="60"/>
+            <RowDefinition Height="65"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <Border Background="#1F1F1F" Padding="15,0">
-            <DockPanel VerticalAlignment="Center">
-                <Button Content="⬅ Înapoi" Width="80" Height="30" Click="BtnBack_Click" Background="#333" Foreground="White" BorderThickness="0"/>
-                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
-                    <TextBlock Text="Sold: " Foreground="White" FontSize="16" VerticalAlignment="Center"/>
-                    <TextBlock x:Name="TxtBalance" Text="0.00 RON" Foreground="Gold" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,10,0"/>
+        <!-- ================= HEADER ================= -->
+        <Border Grid.Row="0" Background="#111115" BorderBrush="#222" BorderThickness="0,0,0,1">
+            <Grid Margin="15,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Column="0" Content="◄ LOBBY" Width="100" Height="35" HorizontalAlignment="Left" Click="BtnBack_Click" Background="#222" Foreground="White" BorderThickness="0" Cursor="Hand" FontWeight="Bold">
+                    <Button.Resources>
+                        <Style TargetType="Border">
+                            <Setter Property="CornerRadius" Value="10"/>
+                        </Style>
+                    </Button.Resources>
+                </Button>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="⚽" FontSize="22" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <TextBlock Text="S P O R T S   B E T T I N G" Foreground="#FFD700" FontSize="20" FontWeight="Black" VerticalAlignment="Center" Effect="{StaticResource NeonGlow}"/>
                 </StackPanel>
-                <TextBlock Text="🏆 LoseBet Sports" Foreground="White" FontSize="22" FontWeight="Black" HorizontalAlignment="Center"/>
-            </DockPanel>
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0">
+                    <TextBlock Text="Sold curent: " Foreground="#888" FontSize="14" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="TxtBalance" Text="0.00 RON" Foreground="#00E676" FontSize="18" FontWeight="Black" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
         </Border>
 
-        <TabControl Grid.Row="1" Margin="10" Background="#1A1A1A">
-            <TabItem Header="⚽ Ofertă Meciuri">
-                <Grid>
+        <!-- ================= CORP PRINCIPAL ================= -->
+        <TabControl Grid.Row="1" Margin="20" Background="Transparent" BorderThickness="0">
+
+            <!-- TAB 1: OFERTĂ MECIURI -->
+            <TabItem Header="⚽ OFERTĂ MECIURI">
+                <Grid Margin="0,15,0,0">
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="2*"/>
-                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="6.5*"/>
+                        <ColumnDefinition Width="3.5*"/>
                     </Grid.ColumnDefinitions>
 
-                    <ScrollViewer Grid.Column="0" Margin="0,0,10,0" VerticalScrollBarVisibility="Auto">
-                        <ItemsControl x:Name="ItemsMatches">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border Background="#252525" Margin="5" Padding="10" CornerRadius="5">
-                                        <Grid>
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="Auto"/>
-                                            </Grid.ColumnDefinitions>
+                    <!-- Lista Meciuri -->
+                    <Border Grid.Column="0" Background="#111115" CornerRadius="15" BorderBrush="#2A2B35" BorderThickness="1" Margin="0,0,15,0" Padding="15">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <ItemsControl x:Name="ItemsMatches">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#14151A" Margin="0,0,0,10" Padding="15" CornerRadius="10" BorderBrush="#2A2B35" BorderThickness="1">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
 
-                                            <StackPanel VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding HomeTeam}" Foreground="White" FontSize="16" FontWeight="Bold"/>
-                                                <TextBlock Text="vs" Foreground="Gray" FontSize="12" Margin="0,2"/>
-                                                <TextBlock Text="{Binding AwayTeam}" Foreground="White" FontSize="16" FontWeight="Bold"/>
-                                            </StackPanel>
+                                                <StackPanel VerticalAlignment="Center" Margin="10,0,0,0">
+                                                    <TextBlock Text="{Binding HomeTeam}" Foreground="White" FontSize="18" FontWeight="Black"/>
+                                                    <TextBlock Text="VS" Foreground="#FFD700" FontSize="12" FontWeight="Bold" Margin="0,3"/>
+                                                    <TextBlock Text="{Binding AwayTeam}" Foreground="White" FontSize="18" FontWeight="Black"/>
+                                                </StackPanel>
 
-                                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                                <Button Content="{Binding Odds1}" Tag="1" DataContext="{Binding}" Click="BtnOdd_Click" Width="50" Height="35" Margin="5" Background="#333" Foreground="White" FontWeight="Bold" ToolTip="Victorie Gazde"/>
-                                                <Button Content="{Binding OddsX}" Tag="X" DataContext="{Binding}" Click="BtnOdd_Click" Width="50" Height="35" Margin="5" Background="#333" Foreground="White" FontWeight="Bold" ToolTip="Egal"/>
-                                                <Button Content="{Binding Odds2}" Tag="2" DataContext="{Binding}" Click="BtnOdd_Click" Width="50" Height="35" Margin="5" Background="#333" Foreground="White" FontWeight="Bold" ToolTip="Victorie Oaspeți"/>
-                                            </StackPanel>
-                                        </Grid>
-                                    </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
+                                                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                                    <StackPanel Margin="5,0">
+                                                        <TextBlock Text="1" Foreground="#888" FontSize="12" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,3"/>
+                                                        <Button Content="{Binding Odds1}" Tag="1" DataContext="{Binding}" Click="BtnOdd_Click" Style="{StaticResource OddBtnStyle}" ToolTip="Victorie Gazde"/>
+                                                    </StackPanel>
+                                                    <StackPanel Margin="5,0">
+                                                        <TextBlock Text="X" Foreground="#888" FontSize="12" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,3"/>
+                                                        <Button Content="{Binding OddsX}" Tag="X" DataContext="{Binding}" Click="BtnOdd_Click" Style="{StaticResource OddBtnStyle}" ToolTip="Egal"/>
+                                                    </StackPanel>
+                                                    <StackPanel Margin="5,0">
+                                                        <TextBlock Text="2" Foreground="#888" FontSize="12" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,3"/>
+                                                        <Button Content="{Binding Odds2}" Tag="2" DataContext="{Binding}" Click="BtnOdd_Click" Style="{StaticResource OddBtnStyle}" ToolTip="Victorie Oaspeți"/>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                    </Border>
 
-                    <Border Grid.Column="1" Background="#2A2A2A" CornerRadius="8" Padding="10">
+                    <!-- Biletul de Pariuri -->
+                    <Border Grid.Column="1" Background="#14151A" CornerRadius="15" BorderBrush="#FFD700" BorderThickness="2" Padding="20" Effect="{StaticResource NeonGlow}">
                         <Grid>
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -64,21 +159,21 @@
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
-                            <TextBlock Text="🎫 BILETUL TĂU" Foreground="Gold" FontSize="18" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                            <TextBlock Text="🎫 BILETUL TĂU" Foreground="#FFD700" FontSize="18" FontWeight="Black" HorizontalAlignment="Center" Margin="0,0,0,15"/>
 
-                            <ListBox x:Name="LstBetSlip" Grid.Row="1" Background="Transparent" BorderThickness="0" Foreground="White" Margin="0,0,0,10">
+                            <ListBox x:Name="LstBetSlip" Grid.Row="1" Background="Transparent" BorderThickness="0" Margin="0,0,0,15">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
-                                        <Border BorderBrush="#444" BorderThickness="0,0,0,1" Padding="5" Width="300">
+                                        <Border BorderBrush="#2A2B35" BorderThickness="0,0,0,1" Padding="10" Margin="0,0,0,5" Background="#1A1B22" CornerRadius="8">
                                             <DockPanel>
-                                                <Button Content="✕" DockPanel.Dock="Right" Click="BtnRemoveSelection_Click" Tag="{Binding MatchId}" Background="Transparent" Foreground="Red" BorderThickness="0"/>
+                                                <Button Content="✕" DockPanel.Dock="Right" Click="BtnRemoveSelection_Click" Tag="{Binding MatchId}" Background="Transparent" Foreground="#E53935" BorderThickness="0" FontWeight="Black" FontSize="16" Cursor="Hand" Margin="10,0,0,0"/>
                                                 <StackPanel>
-                                                    <TextBlock Text="{Binding MatchName}" FontWeight="Bold" FontSize="14" Foreground="White"/>
-                                                    <TextBlock Foreground="LightGray" FontSize="12">
-                                                        <Run Text="Pronostic: "/>
-                                                        <Run Text="{Binding Pick}" FontWeight="Bold" Foreground="Gold"/>
-                                                        <Run Text=" | Cotă: "/>
-                                                        <Run Text="{Binding Odds}"/>
+                                                    <TextBlock Text="{Binding MatchName}" FontWeight="Bold" FontSize="14" Foreground="White" TextWrapping="Wrap"/>
+                                                    <TextBlock FontSize="12" Margin="0,5,0,0">
+                                                        <Run Text="Pronostic: " Foreground="#888"/>
+                                                        <Run Text="{Binding Pick}" FontWeight="Black" Foreground="#FFD700"/>
+                                                        <Run Text=" | Cotă: " Foreground="#888"/>
+                                                        <Run Text="{Binding Odds}" FontWeight="Bold" Foreground="White"/>
                                                     </TextBlock>
                                                 </StackPanel>
                                             </DockPanel>
@@ -88,72 +183,86 @@
                             </ListBox>
 
                             <StackPanel Grid.Row="2">
+                                <Rectangle Height="1" Fill="#2A2B35" Margin="0,0,0,15"/>
+
                                 <DockPanel Margin="0,5">
-                                    <TextBlock Text="Cota Totală:" Foreground="White" FontSize="16"/>
-                                    <TextBlock x:Name="TxtTotalOdds" Text="1.00" Foreground="Lime" FontSize="16" FontWeight="Bold" HorizontalAlignment="Right"/>
+                                    <TextBlock Text="Cotă Totală:" Foreground="#888" FontSize="14" FontWeight="Bold"/>
+                                    <TextBlock x:Name="TxtTotalOdds" Text="1.00" Foreground="#00E676" FontSize="18" FontWeight="Black" HorizontalAlignment="Right"/>
                                 </DockPanel>
 
-                                <DockPanel Margin="0,5,0,15">
-                                    <TextBlock Text="Miză (RON):" Foreground="White" FontSize="16" VerticalAlignment="Center"/>
-                                    <TextBox x:Name="TxtStake" Text="10" Width="100" Height="25" HorizontalAlignment="Right" TextAlignment="Right" TextChanged="TxtStake_TextChanged"/>
+                                <DockPanel Margin="0,15">
+                                    <TextBlock Text="Miză (RON):" Foreground="White" FontSize="14" FontWeight="Bold" VerticalAlignment="Center"/>
+                                    <Border Background="#0A0A0C" CornerRadius="8" BorderBrush="#333" BorderThickness="1" Padding="5" Width="120" HorizontalAlignment="Right">
+                                        <TextBox x:Name="TxtStake" Text="10" Height="30" FontSize="18" FontWeight="Black" HorizontalAlignment="Stretch" TextAlignment="Center" TextChanged="TxtStake_TextChanged" Background="Transparent" Foreground="White" BorderThickness="0"/>
+                                    </Border>
                                 </DockPanel>
 
-                                <DockPanel Margin="0,5,0,15">
-                                    <TextBlock Text="Câștig Potențial:" Foreground="White" FontSize="16"/>
-                                    <TextBlock x:Name="TxtPotentialWin" Text="10.00" Foreground="Gold" FontSize="18" FontWeight="Bold" HorizontalAlignment="Right"/>
+                                <DockPanel Margin="0,5,0,25">
+                                    <TextBlock Text="Câștig Potențial:" Foreground="#888" FontSize="14" FontWeight="Bold"/>
+                                    <TextBlock x:Name="TxtPotentialWin" Text="10.00 RON" Foreground="#FFD700" FontSize="20" FontWeight="Black" HorizontalAlignment="Right" Effect="{StaticResource NeonGlow}"/>
                                 </DockPanel>
 
-                                <Button x:Name="BtnPlaceBet" Content="🚀 PLASEAZĂ BILETUL" Height="45" Background="DarkGreen" Foreground="White" FontSize="16" FontWeight="Bold" Click="BtnPlaceBet_Click"/>
+                                <Button x:Name="BtnPlaceBet" Content="🚀 PLASEAZĂ BILETUL" Height="60" Background="#1E7A34" Foreground="White" FontSize="18" FontWeight="Black" Click="BtnPlaceBet_Click" Cursor="Hand" BorderThickness="0">
+                                    <Button.Resources>
+                                        <Style TargetType="Border">
+                                            <Setter Property="CornerRadius" Value="12"/>
+                                        </Style>
+                                    </Button.Resources>
+                                    <Button.Effect>
+                                        <DropShadowEffect Color="#00E676" BlurRadius="15" ShadowDepth="0" Opacity="0.5"/>
+                                    </Button.Effect>
+                                </Button>
                             </StackPanel>
                         </Grid>
                     </Border>
                 </Grid>
             </TabItem>
 
-            <TabItem Header="📜 Biletele Mele">
-                <ScrollViewer Margin="10" VerticalScrollBarVisibility="Auto">
+            <!-- TAB 2: BILETELE MELE -->
+            <TabItem Header="📜 BILETELE MELE">
+                <ScrollViewer Margin="0,15,0,0" VerticalScrollBarVisibility="Auto">
                     <ItemsControl x:Name="TicketsList">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Margin="0,0,0,15" Padding="15" CornerRadius="8" BorderThickness="2">
+                                <Border Margin="0,0,0,15" Padding="20" CornerRadius="12" BorderThickness="2">
                                     <Border.Style>
                                         <Style TargetType="Border">
-                                            <Setter Property="Background" Value="#252525"/>
-                                            <Setter Property="BorderBrush" Value="#444"/>
+                                            <Setter Property="Background" Value="#111115"/>
+                                            <Setter Property="BorderBrush" Value="#2A2B35"/>
                                             <Style.Triggers>
                                                 <DataTrigger Binding="{Binding Status}" Value="Won">
-                                                    <Setter Property="Background" Value="#153015"/>
-                                                    <Setter Property="BorderBrush" Value="#00AA00"/>
+                                                    <Setter Property="Background" Value="#0A1A10"/>
+                                                    <Setter Property="BorderBrush" Value="#00E676"/>
                                                 </DataTrigger>
                                                 <DataTrigger Binding="{Binding Status}" Value="Lost">
-                                                    <Setter Property="Background" Value="#301515"/>
-                                                    <Setter Property="BorderBrush" Value="#AA0000"/>
+                                                    <Setter Property="Background" Value="#1A0A0A"/>
+                                                    <Setter Property="BorderBrush" Value="#E53935"/>
                                                 </DataTrigger>
                                                 <DataTrigger Binding="{Binding Status}" Value="Pending">
-                                                    <Setter Property="BorderBrush" Value="Goldenrod"/>
+                                                    <Setter Property="BorderBrush" Value="#FFD700"/>
                                                 </DataTrigger>
                                             </Style.Triggers>
                                         </Style>
                                     </Border.Style>
 
                                     <StackPanel>
-                                        <DockPanel Margin="0,0,0,10">
+                                        <DockPanel Margin="0,0,0,15">
                                             <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
-                                                <TextBlock Text="🎫 Bilet ID: " Foreground="White" FontWeight="Bold" FontSize="16"/>
-                                                <TextBlock Text="{Binding Id}" Foreground="White" FontWeight="Bold" FontSize="16" Margin="0,0,15,0"/>
-                                                <TextBlock Text="{Binding CreatedAt, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}" Foreground="Gray" VerticalAlignment="Center"/>
+                                                <TextBlock Text="🎫 Bilet ID: " Foreground="#888" FontWeight="Bold" FontSize="16"/>
+                                                <TextBlock Text="{Binding Id}" Foreground="White" FontWeight="Black" FontSize="16" Margin="0,0,15,0"/>
+                                                <TextBlock Text="{Binding CreatedAt, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}" Foreground="#555" VerticalAlignment="Center" FontWeight="Bold"/>
                                             </StackPanel>
 
-                                            <TextBlock Text="{Binding Status}" FontWeight="Black" FontSize="16" HorizontalAlignment="Right">
+                                            <TextBlock Text="{Binding Status}" FontWeight="Black" FontSize="18" HorizontalAlignment="Right" TextAlignment="Right">
                                                 <TextBlock.Style>
                                                     <Style TargetType="TextBlock">
-                                                        <Setter Property="Foreground" Value="Goldenrod"/>
+                                                        <Setter Property="Foreground" Value="#FFD700"/>
                                                         <Style.Triggers>
                                                             <DataTrigger Binding="{Binding Status}" Value="Won">
-                                                                <Setter Property="Foreground" Value="Lime"/>
+                                                                <Setter Property="Foreground" Value="#00E676"/>
                                                             </DataTrigger>
                                                             <DataTrigger Binding="{Binding Status}" Value="Lost">
-                                                                <Setter Property="Foreground" Value="Red"/>
+                                                                <Setter Property="Foreground" Value="#E53935"/>
                                                             </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>
@@ -161,27 +270,27 @@
                                             </TextBlock>
                                         </DockPanel>
 
+                                        <!-- Meciurile de pe bilet -->
                                         <ItemsControl ItemsSource="{Binding Selections}">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate>
-                                                    <Border Background="#111" Padding="8" Margin="0,2" CornerRadius="4">
+                                                    <Border Background="#1A1B22" Padding="10" Margin="0,3" CornerRadius="8">
                                                         <Grid>
                                                             <Grid.ColumnDefinitions>
                                                                 <ColumnDefinition Width="Auto"/>
                                                                 <ColumnDefinition Width="*"/>
                                                                 <ColumnDefinition Width="Auto"/>
-                                                                <ColumnDefinition Width="Auto"/>
+                                                                <ColumnDefinition Width="80"/>
                                                             </Grid.ColumnDefinitions>
 
-                                                            <Border Background="#333" Padding="6,2" CornerRadius="3" Margin="0,0,15,0">
-                                                                <TextBlock Text="{Binding Pick, StringFormat='Pronostic: {0}'}" Foreground="Gold" FontWeight="Bold"/>
+                                                            <Border Background="#2A2B35" Padding="10,4" CornerRadius="5" Margin="0,0,15,0">
+                                                                <TextBlock Text="{Binding Pick, StringFormat='Pronostic: {0}'}" Foreground="#FFD700" FontWeight="Black"/>
                                                             </Border>
 
                                                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                                                                 <TextBlock Text="{Binding Match.HomeTeam}" Foreground="White" FontWeight="Bold" FontSize="14"/>
-
-                                                                <StackPanel Orientation="Horizontal" Margin="5,0" VerticalAlignment="Center">
-                                                                    <TextBlock Text=" vs " Foreground="Gray">
+                                                                <StackPanel Orientation="Horizontal" Margin="10,0" VerticalAlignment="Center">
+                                                                    <TextBlock Text=" VS " Foreground="#555" FontWeight="Bold">
                                                                         <TextBlock.Style>
                                                                             <Style TargetType="TextBlock">
                                                                                 <Setter Property="Visibility" Value="Collapsed"/>
@@ -193,7 +302,6 @@
                                                                             </Style>
                                                                         </TextBlock.Style>
                                                                     </TextBlock>
-
                                                                     <StackPanel Orientation="Horizontal">
                                                                         <StackPanel.Style>
                                                                             <Style TargetType="StackPanel">
@@ -205,29 +313,28 @@
                                                                                 </Style.Triggers>
                                                                             </Style>
                                                                         </StackPanel.Style>
-                                                                        <TextBlock Text="  " />
-                                                                        <TextBlock Text="{Binding Match.HomeScore}" Foreground="Cyan" FontWeight="Bold" FontSize="14"/>
-                                                                        <TextBlock Text=" - " Foreground="Cyan" FontSize="14"/>
-                                                                        <TextBlock Text="{Binding Match.AwayScore}" Foreground="Cyan" FontWeight="Bold" FontSize="14"/>
-                                                                        <TextBlock Text="  " />
+                                                                        <TextBlock Text=" " />
+                                                                        <TextBlock Text="{Binding Match.HomeScore}" Foreground="#00E676" FontWeight="Black" FontSize="16"/>
+                                                                        <TextBlock Text=" - " Foreground="#00E676" FontSize="16" FontWeight="Black"/>
+                                                                        <TextBlock Text="{Binding Match.AwayScore}" Foreground="#00E676" FontWeight="Black" FontSize="16"/>
+                                                                        <TextBlock Text=" " />
                                                                     </StackPanel>
                                                                 </StackPanel>
-
                                                                 <TextBlock Text="{Binding Match.AwayTeam}" Foreground="White" FontWeight="Bold" FontSize="14"/>
                                                             </StackPanel>
 
-                                                            <TextBlock Grid.Column="2" Text="{Binding Odds, StringFormat='Cotă: {0:F2}'}" Foreground="LightGray" Margin="15,0" VerticalAlignment="Center"/>
+                                                            <TextBlock Grid.Column="2" Text="{Binding Odds, StringFormat='Cotă: {0:F2}'}" Foreground="#888" FontWeight="Bold" Margin="15,0" VerticalAlignment="Center"/>
 
-                                                            <TextBlock Grid.Column="3" Text="{Binding Status}" FontWeight="Bold" Width="60" TextAlignment="Right" VerticalAlignment="Center">
+                                                            <TextBlock Grid.Column="3" Text="{Binding Status}" FontWeight="Black" TextAlignment="Right" VerticalAlignment="Center">
                                                                 <TextBlock.Style>
                                                                     <Style TargetType="TextBlock">
-                                                                        <Setter Property="Foreground" Value="Goldenrod"/>
+                                                                        <Setter Property="Foreground" Value="#FFD700"/>
                                                                         <Style.Triggers>
                                                                             <DataTrigger Binding="{Binding Status}" Value="Won">
-                                                                                <Setter Property="Foreground" Value="Lime"/>
+                                                                                <Setter Property="Foreground" Value="#00E676"/>
                                                                             </DataTrigger>
                                                                             <DataTrigger Binding="{Binding Status}" Value="Lost">
-                                                                                <Setter Property="Foreground" Value="Red"/>
+                                                                                <Setter Property="Foreground" Value="#E53935"/>
                                                                             </DataTrigger>
                                                                         </Style.Triggers>
                                                                     </Style>
@@ -239,17 +346,18 @@
                                             </ItemsControl.ItemTemplate>
                                         </ItemsControl>
 
-                                        <Rectangle Height="1" Fill="#555" Margin="0,10"/>
+                                        <Rectangle Height="1" Fill="#2A2B35" Margin="0,15"/>
+
                                         <DockPanel>
                                             <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="Miză: " Foreground="LightGray" VerticalAlignment="Center"/>
-                                                <TextBlock Text="{Binding Stake, StringFormat='{}{0:F2} RON'}" Foreground="White" FontWeight="Bold" FontSize="14" Margin="0,0,20,0" VerticalAlignment="Center"/>
-                                                <TextBlock Text="Cotă Totală: " Foreground="LightGray" VerticalAlignment="Center"/>
-                                                <TextBlock Text="{Binding TotalOdds, StringFormat='{}{0:F2}'}" Foreground="White" FontWeight="Bold" FontSize="14" VerticalAlignment="Center"/>
+                                                <TextBlock Text="Miză: " Foreground="#888" FontWeight="Bold" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding Stake, StringFormat='{}{0:F2} RON'}" Foreground="White" FontWeight="Black" FontSize="14" Margin="0,0,25,0" VerticalAlignment="Center"/>
+                                                <TextBlock Text="Cotă Totală: " Foreground="#888" FontWeight="Bold" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding TotalOdds, StringFormat='{}{0:F2}'}" Foreground="#00E676" FontWeight="Black" FontSize="14" VerticalAlignment="Center"/>
                                             </StackPanel>
                                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                                                <TextBlock Text="Câștig Potențial: " Foreground="LightGray" VerticalAlignment="Center"/>
-                                                <TextBlock Text="{Binding PotentialWin, StringFormat='{}{0:F2} RON'}" Foreground="Gold" FontSize="16" FontWeight="Bold" VerticalAlignment="Center"/>
+                                                <TextBlock Text="Câștig Potențial: " Foreground="#888" FontWeight="Bold" VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding PotentialWin, StringFormat='{}{0:F2} RON'}" Foreground="#FFD700" FontSize="18" FontWeight="Black" VerticalAlignment="Center"/>
                                             </StackPanel>
                                         </DockPanel>
                                     </StackPanel>
