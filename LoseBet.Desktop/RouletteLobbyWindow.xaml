@@ -169,15 +169,6 @@
                             </LinearGradientBrush>
                         </Button.Background>
                     </Button>
-
-                    <Button Content="🇺🇸 American Roulette" Click="BtnPlayAmer_Click" Style="{StaticResource RouletteCardStyle}">
-                        <Button.Background>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                <GradientStop Color="#00008B" Offset="0"/>
-                                <GradientStop Color="#8B0000" Offset="1"/>
-                            </LinearGradientBrush>
-                        </Button.Background>
-                    </Button>
                 </WrapPanel>
             </StackPanel>
         </Grid>

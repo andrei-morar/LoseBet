@@ -23,10 +23,7 @@ namespace LoseBet.Desktop
             this.Close();
         }
 
-        private void BtnPlayAmer_Click(object sender, RoutedEventArgs e)
-        {
-            MessageBox.Show("Ruleta Americană este momentan indisponibilă.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
-        }
+        // Am șters funcția BtnPlayAmer_Click de aici.
 
         private void BtnBack_Click(object sender, RoutedEventArgs e)
         {

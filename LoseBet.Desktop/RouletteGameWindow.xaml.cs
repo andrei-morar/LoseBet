@@ -187,8 +187,16 @@ namespace LoseBet.Desktop
 
         private void BtnBack_Click(object sender, RoutedEventArgs e)
         {
-            try { RouletteLobbyWindow lobby = new RouletteLobbyWindow(_username, _balance.ToString()); lobby.Show(); this.Close(); }
-            catch { this.Close(); }
+            try
+            {
+                DashboardWindow dashboard = new DashboardWindow(_username, _balance.ToString());
+                dashboard.Show();
+                this.Close();
+            }
+            catch
+            {
+                this.Close();
+            }
         }
     }
 }
