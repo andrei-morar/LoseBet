@@ -59,4 +59,15 @@ Run API: Start the ASP.NET Core project.
 Launch Desktop Client: Build and run the WPF project.
 
 💡 Built by
-[Your Name/Username] - Lead Developer
+
+Morar Andrei - Backend Developer
+
+Moraru Andrei Florin - Backend Developer
+
+Varga Tudor Luca - Frontend Developer
+
+Vesa Luca - Frontend Developer
+
+Pop Bogdan Cristian - Tester
+
+Moldovan Razvan Gabriel - Team Lead
