@@ -166,8 +166,9 @@ namespace LoseBet.Desktop
         private void BtnRoulette_Click(object sender, RoutedEventArgs e)
         {
             string rawBalance = TxtBalance.Text.Replace("Sold: ", "").Replace(" RON", "");
-            RouletteLobbyWindow rouletteLobby = new RouletteLobbyWindow(_savedUsername, rawBalance);
-            rouletteLobby.Show();
+            // Apelăm direct jocul de ruletă (european), sărind peste Lobby-ul cu opțiunea americană scoasă
+            RouletteGameWindow rouletteGame = new RouletteGameWindow(_savedUsername, rawBalance);
+            rouletteGame.Show();
             this.Close();
         }
 

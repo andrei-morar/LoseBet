@@ -1,32 +1,45 @@
 ﻿using System;
 using System.Windows;
+using System.Windows.Controls;
+using System.Collections.Generic;
 
 namespace LoseBet.Desktop
 {
     public partial class BlackJackLobbyWindow : Window
     {
-        // Punem '?' ca să eliminăm eroarea de Nullable din Visual Studio/Git
         private string? _username;
         private string? _balance;
 
         public BlackJackLobbyWindow(string? username, string? balance)
         {
             InitializeComponent();
-
-            // Dacă din vreo eroare vine null, punem valori de rezervă
             _username = username ?? "Guest";
             _balance = balance ?? "0.00";
-
-            // Afișăm soldul pe ecran
             TxtBalance.Text = $"Sold: {_balance} RON";
         }
+
+        private void OpenWalletWithPrefill(int amount)
+        {
+            try
+            {
+                WalletWindow wallet = new WalletWindow(_username ?? "Guest", _balance ?? "0.00", amount);
+                wallet.Show();
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Eroare la deschiderea Casieriei: " + ex.Message);
+            }
+        }
+
+        // bonus claim moved to Wallet; no local handler here
 
         private void BtnPlayClassic_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                // Trimitem datele curate către fereastra de joc
-                BlackjackGameWindow game = new BlackjackGameWindow(_username, _balance);
+                // Masa clasică
+                BlackjackGameWindow game = new BlackjackGameWindow(_username, _balance, false);
                 game.Show();
                 this.Close();
             }
@@ -38,21 +51,23 @@ namespace LoseBet.Desktop
 
         private void BtnPlayVIP_Click(object sender, RoutedEventArgs e)
         {
-            // Am păstrat logica ta, dar i-am dat un text mai "premium"
-            MessageBox.Show("Masa VIP este rezervată momentan pentru jucătorii High Roller. Mai crește soldul!", "VIP Exclusive", MessageBoxButton.OK, MessageBoxImage.Information);
-
-            /* * Dacă vrei mai târziu să o deblochezi, ștergi MessageBox-ul și pui asta:
-             * BlackjackGameWindow game = new BlackjackGameWindow(_username, _balance);
-             * game.Show();
-             * this.Close();
-             */
+            try
+            {
+                // FĂRĂ NICIO VERIFICARE! Te bagă DIRECT la masa VIP (parametrul 'true')
+                BlackjackGameWindow game = new BlackjackGameWindow(_username, _balance, true);
+                game.Show();
+                this.Close();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Eroare la deschiderea mesei VIP: " + ex.Message, "Eroare", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void BtnBack_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                // Ne întoarcem înapoi la Dashboard
                 DashboardWindow dashboard = new DashboardWindow(_username, _balance);
                 dashboard.Show();
                 this.Close();

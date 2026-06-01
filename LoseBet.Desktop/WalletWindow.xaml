@@ -164,7 +164,7 @@
                 <Border Background="#1A1800" CornerRadius="15" BorderBrush="#FFD700" BorderThickness="2" Padding="20" Effect="{StaticResource NeonGlow}">
                     <StackPanel>
                         <TextBlock Text="GIFTBOX NOU!" Foreground="#FFD700" FontSize="14" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,0,0,10"/>
-                        <Button x:Name="BtnBonus" Content="🎁 REVENDICĂ 2000 RON" Click="BtnBonus_Click" Height="55" Background="#FFD700" Foreground="Black" FontSize="16" FontWeight="Black" Cursor="Hand" BorderThickness="0">
+                        <Button x:Name="BtnBonus" Content="🎁 REVENDICĂ 20 RON" Click="BtnBonus_Click" Height="55" Background="#FFD700" Foreground="Black" FontSize="16" FontWeight="Black" Cursor="Hand" BorderThickness="0">
                             <Button.Resources>
                                 <Style TargetType="Border">
                                     <Setter Property="CornerRadius" Value="10"/>

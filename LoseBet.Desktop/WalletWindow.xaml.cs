@@ -28,6 +28,15 @@ namespace LoseBet.Desktop
             UpdateBalanceDisplay();
         }
 
+        // Overload to allow pre-filling deposit amount from lobby
+        public WalletWindow(string username, string currentBalance, decimal prefillAmount) : this(username, currentBalance)
+        {
+            if (prefillAmount > 0)
+            {
+                TxtDepositAmount.Text = prefillAmount.ToString("0.00");
+            }
+        }
+
         private void UpdateBalanceDisplay()
         {
             TxtBalance.Text = $"{_balance:0.00} RON";
@@ -128,13 +137,13 @@ namespace LoseBet.Desktop
         }
 
         // ==========================================
-        // BONUS BUN VENIT 2000 RON
+        // BONUS BUN VENIT 20 RON
         // ==========================================
         private async void BtnBonus_Click(object sender, RoutedEventArgs e)
         {
             if (!_bonusRevendicat)
             {
-                _balance += 2000;
+                _balance += 20; // schimbat din 2000 -> 20
                 _bonusRevendicat = true;
                 UpdateBalanceDisplay();
 
@@ -145,7 +154,7 @@ namespace LoseBet.Desktop
                 BtnBonus.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#333333"));
                 BtnBonus.Foreground = Brushes.Gray;
 
-                SetStatus("Felicitări! Ai revendicat bonusul de bun venit de 2000 RON!", "#00E676");
+                SetStatus("Felicitări! Ai revendicat bonusul de bun venit de 20 RON!", "#00E676");
             }
         }
 

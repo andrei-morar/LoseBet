@@ -45,5 +45,15 @@ namespace LoseBet.API.Controllers
             await _context.SaveChangesAsync();
             return Ok();
         }
+
+        // ADMIN: Seed initial set (useful if DB empty or manual trigger)
+        [HttpPost("admin/seed")]
+        public async Task<IActionResult> SeedQuestions()
+        {
+            var items = Data.TriviaSeeder.GetInitialQuestions();
+            _context.TriviaQuestions.AddRange(items);
+            await _context.SaveChangesAsync();
+            return Ok(new { Message = "Seeded trivia questions." });
+        }
     }
 }

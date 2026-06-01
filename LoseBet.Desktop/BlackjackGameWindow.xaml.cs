@@ -15,22 +15,140 @@ namespace LoseBet.Desktop
     {
         private decimal _balance;
         private string? _username;
-        private decimal _currentBet;
+        private decimal _currentBet = 0;
+        private bool _isVip = false; // FLAG PENTRU MASA VIP
 
         private List<string> _deck = new List<string>();
         private List<string> _playerCards = new List<string>();
         private List<string> _dealerCards = new List<string>();
         private Random _random = new Random();
+        private Button? _selectedChip = null;
 
-        public BlackjackGameWindow(string? username, string? balance)
+        // Am adăugat isVip în constructor!
+        public BlackjackGameWindow(string? username, string? balance, bool isVip = false)
         {
             InitializeComponent();
             _username = username ?? "Guest";
             decimal.TryParse(balance ?? "0", out _balance);
+            _isVip = isVip;
+
+            ApplyTableTheme();
+            GenerateChips();
             UpdateBalanceDisplay();
+            UpdateBetDisplay();
+        }
+
+        private void BtnChipsLeft_Click(object sender, RoutedEventArgs e)
+        {
+            var sv = this.FindName("ChipsScroll") as ScrollViewer;
+            sv?.LineLeft();
+        }
+
+        private void BtnChipsRight_Click(object sender, RoutedEventArgs e)
+        {
+            var sv = this.FindName("ChipsScroll") as ScrollViewer;
+            sv?.LineRight();
+        }
+
+        // ================= TEMATICĂ ȘI JETOANE =================
+
+        private void ApplyTableTheme()
+        {
+            if (_isVip)
+            {
+                TxtGameTitle.Text = "LOSEBET VIP BLACKJACK";
+                // Schimbăm fundalul în Roșu închis pentru VIP
+                BgGradientCenter.Color = (Color)ColorConverter.ConvertFromString("#4A0000");
+                BgGradientEdge.Color = (Color)ColorConverter.ConvertFromString("#110000");
+            }
+            else
+            {
+                TxtGameTitle.Text = "LOSEBET CLASSIC BLACKJACK";
+                // Păstrăm verdele clasic
+                BgGradientCenter.Color = (Color)ColorConverter.ConvertFromString("#005522");
+                BgGradientEdge.Color = (Color)ColorConverter.ConvertFromString("#001105");
+            }
+        }
+
+        private void GenerateChips()
+        {
+            ChipsPanel.Children.Clear();
+
+            // Mizele tale pentru VIP vs Classic
+            // Use requested fixed chip values for betting (single-select)
+            int[] chipValues = _isVip
+                ? new int[] { 500, 750, 1000, 2000, 3000, 5000, 7500, 10000, 25000, 50000 }
+                : new int[] { 10, 20, 30, 40, 50, 60, 80, 100, 250, 400 };
+
+            string[] chipColors = _isVip
+                ? new string[] { "#8B0000", "#4B0082", "#2F4F4F", "#000080", "#B8860B", "#1A1A1A", "#800000", "#FF4500", "#000000" }
+                : new string[] { "#808080", "#0000FF", "#FF0000", "#008000", "#000000" };
+
+            for (int i = 0; i < chipValues.Length; i++)
+            {
+                int val = chipValues[i];
+                Button chip = new Button();
+
+                // Dacă e peste 1000, scriem "1k", "5k" ca să încapă frumos pe jeton
+                chip.Content = val >= 1000 ? (val / 1000).ToString() + "k" : val.ToString();
+                chip.Tag = val;
+                chip.Style = (Style)FindResource("ChipButtonStyle");
+                chip.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(chipColors[i % chipColors.Length]));
+
+                chip.Click += Chip_Click;
+                ChipsPanel.Children.Add(chip);
+            }
+        }
+
+        private void Chip_Click(object sender, RoutedEventArgs e)
+        {
+            if (!(sender is Button btn)) return;
+            int chipValue = (int)btn.Tag;
+
+            if (chipValue > _balance)
+            {
+                MessageBox.Show("Nu ai suficienți bani pentru această miză!", "Fonduri insuficiente");
+                return;
+            }
+
+            // Single-selection behavior: set bet to this chip value once and disable other chips
+            _currentBet = chipValue;
+            UpdateBetDisplay();
+
+            // mark selected
+            _selectedChip = btn;
+            foreach (var child in ChipsPanel.Children)
+            {
+                if (child is Button b)
+                {
+                    b.IsEnabled = false;
+                    b.Opacity = b == _selectedChip ? 1.0 : 0.6;
+                }
+            }
+        }
+
+        private void BtnClearBet_Click(object sender, RoutedEventArgs e)
+        {
+            _currentBet = 0;
+            UpdateBetDisplay();
+
+            // Re-enable chips
+            foreach (var child in ChipsPanel.Children)
+            {
+                if (child is Button b)
+                {
+                    b.IsEnabled = true;
+                    b.Opacity = 1.0;
+                }
+            }
+            _selectedChip = null;
         }
 
         private void UpdateBalanceDisplay() => TxtBalance.Text = $"Sold: {_balance:0.00} RON";
+        private void UpdateBetDisplay() => TxtCurrentBet.Text = $" (Miza: {_currentBet} RON)";
+
+
+        // ================= LOGICA DE JOC =================
 
         private void InitializeDeck()
         {
@@ -50,6 +168,10 @@ namespace LoseBet.Desktop
 
         private string DrawCard()
         {
+            if (_deck == null || _deck.Count == 0)
+            {
+                InitializeDeck();
+            }
             string card = _deck[0];
             _deck.RemoveAt(0);
             return card;
@@ -93,8 +215,7 @@ namespace LoseBet.Desktop
 
             if (hidden)
             {
-                // SCHIMBARE AICI: Albastru închis pentru spatele cărții (se potrivește cu masa Classic)
-                b.Background = new SolidColorBrush(Color.FromRgb(0, 34, 102)); // Același albastru #002266
+                b.Background = new SolidColorBrush(Color.FromRgb(0, 34, 102));
                 b.BorderBrush = Brushes.White;
                 b.BorderThickness = new Thickness(2);
             }
@@ -174,9 +295,17 @@ namespace LoseBet.Desktop
 
         private async void BtnDeal_Click(object sender, RoutedEventArgs e)
         {
-            if (!decimal.TryParse(TxtBetAmount.Text, out _currentBet) || _currentBet <= 0 || _currentBet > _balance)
+            if (_currentBet <= 0)
             {
-                MessageBox.Show("Miza invalidă sau fonduri insuficiente!"); return;
+                MessageBox.Show("Adaugă miza folosind jetoanele!", "Miză zero");
+                return;
+            }
+
+            int minBet = _isVip ? 500 : 10;
+            if (_currentBet < minBet)
+            {
+                MessageBox.Show($"Miza minimă la această masă este de {minBet} RON!", "Atenție");
+                return;
             }
 
             _balance -= _currentBet;
@@ -259,7 +388,7 @@ namespace LoseBet.Desktop
                 UpdateBalanceDisplay();
 
                 TxtWinAmount.Text = $"+ {win:0.00} RON";
-                LanseazaArtificii(); // Lansăm explozia magică
+                LanseazaArtificii();
             }
             else
             {
@@ -281,18 +410,30 @@ namespace LoseBet.Desktop
                     TxtStatus.Foreground = Brushes.Tomato;
                 }
 
+                _currentBet = 0; // Resetăm miza după o mână pierdută/egală
+                UpdateBetDisplay();
                 PanelBetting.Visibility = Visibility.Visible;
                 PanelActions.Visibility = Visibility.Collapsed;
+
+                // Re-enable chips for next round
+                foreach (var child in ChipsPanel.Children)
+                {
+                    if (child is Button b)
+                    {
+                        b.IsEnabled = true;
+                        b.Opacity = 1.0;
+                    }
+                }
+                _selectedChip = null;
             }
         }
 
-        // ================= EFECT DE EXPLOZIE 3D (ZBOARĂ SPRE TINE) =================
+        // ================= EFECT DE EXPLOZIE 3D =================
         private void LanseazaArtificii()
         {
             WinOverlay.Visibility = Visibility.Visible;
             WinOverlay.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromSeconds(0.2)));
 
-            // 1. Textul "Sare" agresiv spre tine
             DoubleAnimation textAnim = new DoubleAnimation
             {
                 From = 0,
@@ -303,57 +444,38 @@ namespace LoseBet.Desktop
             TxtWinScale.BeginAnimation(ScaleTransform.ScaleXProperty, textAnim);
             TxtWinScale.BeginAnimation(ScaleTransform.ScaleYProperty, textAnim);
 
-            // 2. Pulsarea Trompetelor
-            DoubleAnimation trumpetPulse = new DoubleAnimation
-            {
-                From = 1.0,
-                To = 1.3,
-                Duration = TimeSpan.FromSeconds(0.3),
-                AutoReverse = true,
-                RepeatBehavior = RepeatBehavior.Forever
-            };
+            DoubleAnimation trumpetPulse = new DoubleAnimation { From = 1.0, To = 1.3, Duration = TimeSpan.FromSeconds(0.3), AutoReverse = true, RepeatBehavior = RepeatBehavior.Forever };
             TrumpetLeftScale.BeginAnimation(ScaleTransform.ScaleXProperty, trumpetPulse);
             TrumpetLeftScale.BeginAnimation(ScaleTransform.ScaleYProperty, trumpetPulse);
 
-            DoubleAnimation trumpetPulseRight = new DoubleAnimation
-            {
-                From = -1.0,
-                To = -1.3,
-                Duration = TimeSpan.FromSeconds(0.3),
-                AutoReverse = true,
-                RepeatBehavior = RepeatBehavior.Forever
-            };
+            DoubleAnimation trumpetPulseRight = new DoubleAnimation { From = -1.0, To = -1.3, Duration = TimeSpan.FromSeconds(0.3), AutoReverse = true, RepeatBehavior = RepeatBehavior.Forever };
             TrumpetRightScale.BeginAnimation(ScaleTransform.ScaleXProperty, trumpetPulseRight);
             TrumpetRightScale.BeginAnimation(ScaleTransform.ScaleYProperty, trumpetPulse);
 
-            // 3. ARTIFICIILE EXPLODEAZĂ DIN CENTRU SPRE ECRAN (Efect 3D)
             FireworksCanvas.Children.Clear();
 
-            // Centrul exploziei (fix sub text)
             double centerX = WinOverlay.ActualWidth > 0 ? WinOverlay.ActualWidth / 2 : 500;
             double centerY = WinOverlay.ActualHeight > 0 ? WinOverlay.ActualHeight / 2 - 50 : 350;
 
             Color[] culori = new Color[] { Colors.Gold, Colors.Orange, Colors.Red, Colors.LimeGreen, Colors.Cyan, Colors.White };
 
-            for (int i = 0; i < 120; i++) // 120 de particule pentru un impact major
+            for (int i = 0; i < 120; i++)
             {
-                bool isTrail = _random.Next(0, 3) == 0; // O parte din ele vor fi dâre lungi de lumină
+                bool isTrail = _random.Next(0, 3) == 0;
                 Shape particle;
 
                 if (isTrail)
                 {
-                    // Dâră de lumină
                     particle = new Rectangle
                     {
                         Width = _random.Next(30, 80),
                         Height = _random.Next(2, 5),
                         Fill = new SolidColorBrush(culori[_random.Next(culori.Length)]),
-                        Effect = new DropShadowEffect { Color = Colors.White, BlurRadius = 15, ShadowDepth = 0 } // Glow puternic
+                        Effect = new DropShadowEffect { Color = Colors.White, BlurRadius = 15, ShadowDepth = 0 }
                     };
                 }
                 else
                 {
-                    // Stele / Puncte
                     particle = new Ellipse
                     {
                         Width = _random.Next(8, 20),
@@ -363,19 +485,16 @@ namespace LoseBet.Desktop
                     };
                 }
 
-                // Generăm mișcarea
                 double angle = _random.NextDouble() * 2 * Math.PI;
-                double dist = _random.Next(200, 900); // Se duc mult în afara ecranului
-                double duration = 1.0 + _random.NextDouble() * 1.5; // Între 1 și 2.5 secunde
+                double dist = _random.Next(200, 900);
+                double duration = 1.0 + _random.NextDouble() * 1.5;
 
-                // Pregătim elementele pentru transformări
                 TransformGroup tg = new TransformGroup();
 
-                // Rotim dârele de lumină astfel încât să urmeze direcția în care zboară
                 if (isTrail) tg.Children.Add(new RotateTransform(angle * 180 / Math.PI));
                 else tg.Children.Add(new RotateTransform(_random.Next(0, 360)));
 
-                ScaleTransform scaleT = new ScaleTransform(0.1, 0.1); // Pleacă microscopice (din spatele textului)
+                ScaleTransform scaleT = new ScaleTransform(0.1, 0.1);
                 tg.Children.Add(scaleT);
 
                 TranslateTransform transT = new TranslateTransform(centerX, centerY);
@@ -385,15 +504,12 @@ namespace LoseBet.Desktop
                 particle.RenderTransform = tg;
                 FireworksCanvas.Children.Add(particle);
 
-                // Animație 1: Deplasare
                 DoubleAnimation animX = new DoubleAnimation(centerX, centerX + Math.Cos(angle) * dist, TimeSpan.FromSeconds(duration)) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
                 DoubleAnimation animY = new DoubleAnimation(centerY, centerY + Math.Sin(angle) * dist, TimeSpan.FromSeconds(duration)) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
 
-                // Animație 2: Mărire (creează iluzia că zboară SPRE TINE)
-                double finalScale = isTrail ? 1.5 : _random.NextDouble() * 2 + 1.5; // Se fac mari de 2-3 ori
+                double finalScale = isTrail ? 1.5 : _random.NextDouble() * 2 + 1.5;
                 DoubleAnimation animScale = new DoubleAnimation(0.1, finalScale, TimeSpan.FromSeconds(duration)) { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn } };
 
-                // Animație 3: Fade Out la final
                 DoubleAnimation animOpacity = new DoubleAnimation(1, 0, TimeSpan.FromSeconds(duration)) { BeginTime = TimeSpan.FromSeconds(duration * 0.5) };
 
                 transT.BeginAnimation(TranslateTransform.XProperty, animX);
@@ -414,9 +530,12 @@ namespace LoseBet.Desktop
             WinOverlay.Visibility = Visibility.Collapsed;
             FireworksCanvas.Children.Clear();
 
+            _currentBet = 0; // Resetăm miza și curățăm ecranul pentru o rundă nouă
+            UpdateBetDisplay();
+
             PanelBetting.Visibility = Visibility.Visible;
             PanelActions.Visibility = Visibility.Collapsed;
-            TxtStatus.Text = "Pune miza și apasă DEAL!";
+            TxtStatus.Text = "Alege miza cu jetoanele și apasă DEAL!";
             TxtStatus.Foreground = Brushes.Gold;
         }
 

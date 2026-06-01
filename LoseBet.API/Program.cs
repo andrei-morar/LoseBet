@@ -19,6 +19,25 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
+// Seed trivia questions if none exist
+using (var scope = app.Services.CreateScope())
+{
+    try
+    {
+        var db = scope.ServiceProvider.GetRequiredService<LoseBetDbContext>();
+        if (!db.TriviaQuestions.Any())
+        {
+            var items = TriviaSeeder.GetInitialQuestions();
+            db.TriviaQuestions.AddRange(items);
+            db.SaveChanges();
+        }
+    }
+    catch
+    {
+        // ignore seeding errors in startup
+    }
+}
+
 // 4. Activăm interfața grafică pentru API (doar pe calculatorul tău, în Development)
 if (app.Environment.IsDevelopment())
 {
